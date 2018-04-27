@@ -13,18 +13,11 @@ export function withFlip(Component) {
   };
 }
 
-const initialState = {
-  isPlaying: false,
-  measurements: null,
-  sharedId: null,
-  first: null,
-  last: null,
-};
-
 class SharedElement extends Component {
   static propTypes = {
     children: PropTypes.any.isRequired,
     delay: PropTypes.number,
+    easing: PropTypes.string,
   };
 
   static defaultProps = {
@@ -33,90 +26,76 @@ class SharedElement extends Component {
     easing: 'cubic-bezier(0.075, 0.82, 0.165, 1)',
   };
 
-  state = initialState;
+  sharedId = null;
+  first = null;
+  last = null;
+  measurements = null;
 
-  clear = () => this.setState({ ...initialState });
-
-  setShared = sharedId => this.setState({ sharedId });
-
-  setFirst = ({ x, y, width, height }) => {
-    this.setState({ first: { x, y, width, height } }, this.inverse);
+  clear = () => {
+    this.sharedId = null;
+    this.first = null;
+    this.last = null;
+    this.measurements = null;
   };
 
-  setLast = ({ x, y, width, height }) => {
-    this.setState({ last: { x, y, width, height } }, this.inverse);
-  };
+  // Inverse happens here
+  setStyles = () => {
+    const { easing, duration, delay } = this.props;
+    const { translateX, translateY, scaleX, scaleY } = this.measurements;
+    const el = document.getElementById(this.sharedId);
 
-  getStyles = id => {
-    const { measurements, isPlaying, sharedId } = this.state;
-    const { easing, duration } = this.props;
-
-    if (!measurements || id !== sharedId) return {};
-
-    const { translateX, translateY, scaleX, scaleY } = measurements;
     const translate = `translate3d(${translateX}px, ${translateY}px, 0px)`;
     const scale = `scale(${scaleX}, ${scaleY})`;
     const transform = `${translate} ${scale}`;
 
-    return isPlaying
-      ? {
-          transition: `all ${duration}ms ${easing}`,
-          transformOrigin: 'top left',
-          transform: 'none',
-        }
-      : {
-          transition: 'none',
-          transformOrigin: 'top left',
-          transform: `${transform}`,
-        };
+    requestAnimationFrame(() => {
+      el.style.willChange = 'transform';
+      el.style.transition = 'none';
+      el.style.transformOrigin = 'top left';
+      el.style.transform = `${transform}`;
+
+      requestAnimationFrame(() => {
+        el.style.transition = `all ${duration}ms ${easing} ${delay}ms`;
+        el.style.transform = 'none';
+      });
+    });
   };
 
   readFirst = id => {
     const el = document.getElementById(id);
-    const dim = el.getBoundingClientRect();
+    const { x, y, width, height } = el.getBoundingClientRect();
 
     this.clear();
-    this.setShared(id);
-    this.setFirst({ x: dim.x, y: dim.y, width: dim.width, height: dim.height });
+    this.sharedId = id;
+    this.first = { x, y, width, height };
   };
 
   readLast = id => {
     const el = document.getElementById(id);
-    const dim = el.getBoundingClientRect();
+    const { x, y, width, height } = el.getBoundingClientRect();
 
-    this.setLast({ x: dim.x, y: dim.y, width: dim.width, height: dim.height });
+    this.last = { x, y, width, height };
+    this.measure();
   };
 
-  inverse = () => {
-    const { first, last } = this.state;
-    if (!first || !last) return;
-
-    const scaleX = first.width / last.width;
-    const scaleY = first.height / last.height;
-    const translateX = first.x - last.x;
-    const translateY = first.y - last.y;
-
-    this.setState({ measurements: { translateX, translateY, scaleX, scaleY } });
+  measure = () => {
+    const scaleX = this.first.width / this.last.width;
+    const scaleY = this.first.height / this.last.height;
+    const translateX = this.first.x - this.last.x;
+    const translateY = this.first.y - this.last.y;
+    this.measurements = { translateX, translateY, scaleX, scaleY };
   };
 
-  play = () => {
-    const { isPlaying, last, first } = this.state;
-
-    // Only fire play once
-    if (!isPlaying && last && first) {
-      setTimeout(() => {
-        this.setState({ isPlaying: true });
-      }, this.props.delay);
-    }
-  };
+  flip = () => {
+    if (this.sharedId) this.readLast(this.sharedId);
+    if (this.first && this.last) this.setStyles();
+  }
 
   render() {
     const context = {
-      readFirst: this.readFirst,
-      readLast: this.readLast,
-      play: this.play,
+      read: this.readFirst,
       state: this.state,
-      getStyles: this.getStyles,
+      flip: this.flip,
     };
 
     return (

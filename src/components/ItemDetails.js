@@ -14,29 +14,29 @@ class ItemDetails extends Component {
     this.props.onBack();
   };
 
-  componentDidMount() {
-    this.props.flip.readLast(this.props.item.id);
-  }
+  // componentDidMount() {
+  //   this.props.flip.readLast(this.props.item.id);
 
-  componentDidUpdate() {
-    this.props.flip.play();
+  //   if (this.props.flip.canFlip()) {
+  //     this.props.flip.play();
+  //   }
+  // }
+
+  componentDidMount() {
+    this.props.flip.flip();
   }
 
   componentWillUnmount() {
-    this.props.flip.readFirst(this.props.item.id);
+    this.props.flip.read(this.props.item.id);
   }
 
   render() {
-    const { item, flip } = this.props;
+    const { item } = this.props;
 
     return (
       <Wrapper>
         <BackButton onClick={this.onBack}>Back</BackButton>
-        <HeaderImage
-          src={item.image}
-          id={item.id}
-          style={{ ...flip.getStyles(item.id) }}
-        />
+        <HeaderImage src={item.image} id={item.id} />
         <Content>
           <Heading>{item.title}</Heading>
           <Text>{item.text}</Text>
@@ -94,12 +94,12 @@ const BackButton = styled.div`
   animation-timing-function: ease;
   animation-delay: 0.8s;
   animation-fill-mode: forwards;
-  box-shadow: 0px 1px 8px rgba(0,0,0,0.3);
+  box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.3);
 `;
 
 const HeaderImage = styled.img`
   z-index: 0;
-  height: auto;  
+  height: auto;
   width: 100%;
 `;
 

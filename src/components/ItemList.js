@@ -13,34 +13,26 @@ class ItemList extends Component {
   };
 
   componentDidMount() {
-    const { sharedId } = this.props.flip.state;
-    if (!sharedId) return;
-    this.props.flip.readLast(sharedId);
-  }
-
-  componentDidUpdate() {
-    this.props.flip.play();
+    this.props.flip.flip();
   }
 
   handleClick = (index, id) => {
-    this.props.flip.readFirst(id);
+    this.props.flip.read(id);
     this.props.onItemSelect(index);
   };
 
   render() {
-    const { items, flip } = this.props;
+    const { items } = this.props;
 
     return (
       <Wrapper>
         {items.map((item, index) => {
-          const thumbStyle = { ...flip.getStyles(item.id) };
-
           return (
             <Item
               key={item.id}
               onClick={() => this.handleClick(index, item.id)}
             >
-              <Thumbnail src={item.image} id={item.id} style={thumbStyle} />
+              <Thumbnail src={item.image} id={item.id} />
               <ItemContent>
                 <Title>{item.title}</Title>
                 <Text>{item.text.substring(0, 40)}...</Text>
@@ -70,7 +62,8 @@ const Item = styled.div`
 `;
 
 const Thumbnail = styled.img`
-  height: 80px;
+  width: 80px;
+  height: 60px;
 `;
 
 const ItemContent = styled.div`
