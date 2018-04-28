@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { withFlip } from './FlipProvider';
+import { withSheltr } from './Sheltr';
 
 class ItemList extends Component {
   static propTypes = {
     items: PropTypes.array,
+    sheltr: PropTypes.object.isRequired,
   };
 
   static defaultProps = {
@@ -13,11 +14,11 @@ class ItemList extends Component {
   };
 
   componentDidMount() {
-    this.props.flip.flip();
+    this.props.sheltr.transition();
   }
 
   handleClick = (index, id) => {
-    this.props.flip.read(id);
+    this.props.sheltr.read(id);
     this.props.onItemSelect(index);
   };
 
@@ -64,6 +65,7 @@ const Item = styled.div`
 const Thumbnail = styled.img`
   width: 80px;
   height: 60px;
+  background: #eee;
 `;
 
 const ItemContent = styled.div`
@@ -82,4 +84,4 @@ const Text = styled.span`
   color: #444;
 `;
 
-export default withFlip(ItemList);
+export default withSheltr(ItemList);

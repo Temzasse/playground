@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 
-import FlipProvider from './components/FlipProvider';
+import Sheltr from './components/Sheltr';
 import ItemList from './components/ItemList';
 import ItemDetails from './components/ItemDetails';
 
@@ -12,7 +12,7 @@ class App extends Component {
         id: 'item_1',
         title: 'Flip with the new React Context API!',
         text: 'Market metrics growth hacking product management gamification backing creative prototype return on investment. Ownership prototype venture termsheet strategy startup network effects. Iteration long tail ownership virality buzz burn rate release entrepreneur direct mailing seed round business-to-consumer network effects. Hypotheses assets virality android angel investor partnership innovator seed round marketing non-disclosure agreement creative twitter.',
-        image: 'https://source.unsplash.com/N-X3TCHj5Jk/800x600',
+        image: 'https://source.unsplash.com/NqReTJfnAT0/800x600',
       },
       {
         id: 'item_2',
@@ -49,7 +49,7 @@ class App extends Component {
 
     return (
       <Wrapper>
-        <FlipProvider>
+        <Sheltr delay={200}>
           {activeItemIndex !== null ? (
             <ItemDetails
               item={items[activeItemIndex]}
@@ -58,14 +58,14 @@ class App extends Component {
           ) : (
             <ItemList items={items} onItemSelect={this.selectItem} />
           )}
-        </FlipProvider>
+        </Sheltr>
       </Wrapper>
     );
   }
 }
 
 const Wrapper = styled.div`
-  max-width: 900px;
+  max-width: 800px;
   margin: 60px auto;
 `;
 

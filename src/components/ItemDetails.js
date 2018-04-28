@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled, { css, keyframes } from 'styled-components';
-import { withFlip } from './FlipProvider';
+import { withSheltr } from './Sheltr';
 
 class ItemDetails extends Component {
   static propTypes = {
     onBack: PropTypes.func.isRequired,
-    flip: PropTypes.object.isRequired,
+    sheltr: PropTypes.object.isRequired,
     item: PropTypes.object.isRequired,
   };
 
@@ -14,20 +14,12 @@ class ItemDetails extends Component {
     this.props.onBack();
   };
 
-  // componentDidMount() {
-  //   this.props.flip.readLast(this.props.item.id);
-
-  //   if (this.props.flip.canFlip()) {
-  //     this.props.flip.play();
-  //   }
-  // }
-
   componentDidMount() {
-    this.props.flip.flip();
+    this.props.sheltr.transition();
   }
 
   componentWillUnmount() {
-    this.props.flip.read(this.props.item.id);
+    this.props.sheltr.read(this.props.item.id);
   }
 
   render() {
@@ -36,7 +28,12 @@ class ItemDetails extends Component {
     return (
       <Wrapper>
         <BackButton onClick={this.onBack}>Back</BackButton>
-        <HeaderImage src={item.image} id={item.id} />
+        <HeaderImage
+          src={item.image}
+          id={item.id}
+          data-native-width="800"
+          data-native-height="600"
+        />
         <Content>
           <Heading>{item.title}</Heading>
           <Text>{item.text}</Text>
@@ -99,8 +96,8 @@ const BackButton = styled.div`
 
 const HeaderImage = styled.img`
   z-index: 0;
-  height: auto;
   width: 100%;
+  background: #eee;
 `;
 
 const Content = styled.div`
@@ -124,4 +121,4 @@ const Text = styled.span`
   color: #444;
 `;
 
-export default withFlip(ItemDetails);
+export default withSheltr(ItemDetails);
