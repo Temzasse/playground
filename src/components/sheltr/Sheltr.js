@@ -73,6 +73,8 @@ class Sheltr extends Component {
           el.style.removeProperty('width');
           el.style.removeProperty('height');
         }, delay + 1000);
+
+        this.clear();
       });
     });
   };
