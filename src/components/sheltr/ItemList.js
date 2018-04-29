@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import { withSheltr } from './Sheltr';
 
 class ItemList extends Component {
@@ -17,21 +18,21 @@ class ItemList extends Component {
     this.props.sheltr.transition();
   }
 
-  handleClick = (index, id) => {
+  handleClick = id => {
     this.props.sheltr.read(id);
-    this.props.onItemSelect(index);
   };
 
   render() {
-    const { items } = this.props;
+    const { items, match } = this.props;
 
     return (
       <Wrapper>
-        {items.map((item, index) => {
+        {items.map(item => {
           return (
             <Item
               key={item.id}
-              onClick={() => this.handleClick(index, item.id)}
+              to={`${match.url}/${item.id}`}
+              onClick={() => this.handleClick(item.id)}
             >
               <Thumbnail src={item.image} id={item.id} />
               <ItemContent>
@@ -51,11 +52,12 @@ const Wrapper = styled.div`
   flex-direction: column;
 `;
 
-const Item = styled.div`
+const Item = styled(Link)`
   display: flex;
   flex-direction: row;
   padding: 16px;
   border-bottom: 1px solid #eee;
+  text-decoration: none;
 
   &:active {
     background-color: #f5f5f5;

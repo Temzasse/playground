@@ -1,17 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import styled, { css, keyframes } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { withSheltr } from './Sheltr';
 
 class ItemDetails extends Component {
   static propTypes = {
-    onBack: PropTypes.func.isRequired,
     sheltr: PropTypes.object.isRequired,
     item: PropTypes.object.isRequired,
-  };
-
-  onBack = () => {
-    this.props.onBack();
   };
 
   componentDidMount() {
@@ -27,7 +22,7 @@ class ItemDetails extends Component {
 
     return (
       <Wrapper>
-        <BackButton onClick={this.onBack}>Back</BackButton>
+        <BackButton onClick={this.props.history.goBack}>&larr;</BackButton>
         <HeaderImage
           src={item.image}
           id={item.id}
@@ -72,16 +67,18 @@ const Wrapper = styled.div`
   position: relative;
 `;
 
-const BackButton = styled.div`
+const BackButton = styled.button`
   z-index: 1;
   position: absolute;
   top: 16px;
   left: 16px;
-  padding: 8px 16px;
-  background-color: slategray;
-  border-radius: 99px;
+  width: 40px;
+  height: 40px;
+  background-color: #637381;
+  border-radius: 50%;
+  border: none;
   color: #fff;
-  font-size: 14px;
+  font-size: 18px;
   display: flex;
   justify-content: center;
   align-items: center;
