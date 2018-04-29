@@ -36,6 +36,11 @@ const ExampleItem = styled(Link)`
   text-decoration: none;
   font-weight: 700;
   color: #637381;
+
+  @media screen and (max-width: 600px) {
+    flex: 100%;
+    max-width: 100%;
+  }
 `;
 
 SheltrExamples.propTypes = propTypes;

@@ -65,9 +65,14 @@ const Item = styled(Link)`
 `;
 
 const Thumbnail = styled.img`
-  width: 80px;
-  height: 60px;
+  width: 120px;
+  height: 90px;
   background: #eee;
+
+  @media screen and (max-width: 600px) {
+    width: 80px;
+    height: 60px;
+  }
 `;
 
 const ItemContent = styled.div`
@@ -79,6 +84,10 @@ const Title = styled.h2`
   margin: 0px 0px 8px 0px;
   font-size: 20px;
   color: #222;
+
+  @media screen and (max-width: 600px) {
+    font-size: 18px;
+  }
 `;
 
 const Text = styled.span`
