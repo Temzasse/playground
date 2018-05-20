@@ -2,19 +2,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { withSheltr } from './Sheltr';
-
-const propTypes = {
-  images: PropTypes.array.isRequired,
-};
+import { SharedElement } from './Sheltr';
 
 class Gallery extends Component {
-  componentDidMount() {
-    this.props.sheltr.transition();
-  }
-
-  handleClick = id => {
-    this.props.sheltr.read(id);
+  static propTypes = {
+    images: PropTypes.array.isRequired,
   };
 
   render() {
@@ -25,13 +17,17 @@ class Gallery extends Component {
         {images.map(col => (
           <Column key={col.id}>
             {col.images.map(img => (
-              <ImgWrapper
-                key={img.id}
-                to={`${match.url}/${img.id}`}
-                onClick={() => this.handleClick(img.id)}
-              >
-                <Img key={img.id} id={img.id} src={img.src} />
-              </ImgWrapper>
+              <SharedElement sharedId={img.id} readOnClick>
+                {({ id, onClick }) => (
+                  <ImgWrapper
+                    key={img.id}
+                    to={`${match.url}/${img.id}`}
+                    onClick={onClick}
+                  >
+                    <Img id={id} src={img.src} />
+                  </ImgWrapper>
+                )}
+              </SharedElement>
             ))}
           </Column>
         ))}
@@ -73,6 +69,4 @@ const Img = styled.img`
   background-color: #eee;
 `;
 
-Gallery.propTypes = propTypes;
-
-export default withSheltr(Gallery);
+export default Gallery;

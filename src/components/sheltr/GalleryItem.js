@@ -1,31 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { withSheltr } from './Sheltr';
+import { SharedElement } from './Sheltr';
 
-class GalleryItem extends Component {
-  static propTypes = {
-    foo: PropTypes.object,
-  };
-
-  componentDidMount() {
-    this.props.sheltr.transition();
-  }
-
-  componentWillUnmount() {
-    this.props.sheltr.read(this.props.image.id);
-  }
-
-  render() {
-    const { image } = this.props;
-
-    return (
-      <Wrapper onClick={this.props.history.goBack}>
-        <Img src={image.src} id={image.id} />
-      </Wrapper>
-    );
-  }
-}
+// NOTE: `history.goBack` is quite hacky...
+// It's only to make the example more simple.
+const GalleryItem = ({ image, history }) => (
+  <Wrapper onClick={history.goBack}>
+    <SharedElement sharedId={image.id} readOnUnmount>
+      {sheltrProps => <Img src={image.src} {...sheltrProps} />}
+    </SharedElement>
+  </Wrapper>
+);
 
 const Wrapper = styled.div`
   position: fixed;
@@ -46,4 +32,4 @@ const Img = styled.img`
   height: auto;
 `;
 
-export default withSheltr(GalleryItem);
+export default GalleryItem;
