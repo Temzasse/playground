@@ -3,16 +3,6 @@ import PropTypes from 'prop-types';
 
 const SheltrContext = React.createContext();
 
-export function withSheltr(Component) {
-  return function SheltrComponent(props) {
-    return (
-      <SheltrContext.Consumer>
-        {context => <Component {...props} sheltr={context} />}
-      </SheltrContext.Consumer>
-    );
-  };
-}
-
 // Shared Element Transition --> Sh El Tr --> Sheltr
 class Sheltr extends Component {
   static propTypes = {
@@ -66,7 +56,6 @@ class Sheltr extends Component {
         el.style.transition = `transform ${duration}ms ${easing} ${delay}ms`;
         el.style.transform = 'none';
 
-        // Remove fixed width / height after animation has ended.
         // Add some extra time to take lagginess into account.
         // TODO: use `transitionend` instead?
         setTimeout(() => {
@@ -96,33 +85,30 @@ class Sheltr extends Component {
     this.first = { x, y, width, height };
   };
 
-  readLast = id => {
-    const el = document.getElementById(id);
-    const { nativeWidth, nativeHeight } = el.dataset;
-    const aspectRatio = nativeWidth / nativeHeight;
+  readLast = () => {
+    const el = document.getElementById(this.sharedId);
+    const { sheltrWidth, sheltrHeight } = el.dataset;
+    const aspectRatio = sheltrWidth / sheltrHeight;
 
     /* NOTE: if image is not loaded `getBoundingClientRect` returns `height: 0`
      * at least with Safari after some quick testing.
-     * So we need to calculate height from the width of the element if the user
-     * has provided the known native width / height of the image.
+     * So we need to calculate height from the width and aspect ratio
+     * of the element if the user has provided the known
+     * native width / height of the image.
      *
      * TODO: can width be zero and mess things up?
      */
     const { x, y, width, height } = el.getBoundingClientRect();
-    const h = height || width / aspectRatio;
+    const finalHeight = height || width / aspectRatio;
 
-    this.last = { x, y, width, height: h };
+    this.last = { x, y, width, height: finalHeight };
     this.measure();
   };
 
   // NOTE: "First" is always read before `transition`
   transition = () => {
-    // TODO: log error if `sharedId` is not defined
-    // TODO: log error if `this.first` is not defined
-
-    // Use `sharedId` to read Last.
-    if (this.sharedId) {
-      this.readLast(this.sharedId); // Last
+    if (this.first && this.sharedId) {
+      this.readLast(); // Last
       this.setStyles(); // Invert & Play
     }
   };
@@ -130,8 +116,8 @@ class Sheltr extends Component {
   render() {
     const context = {
       read: this.readFirst,
-      state: this.state,
       transition: this.transition,
+      getSharedId: this.getSharedId,
     };
 
     return (
@@ -142,4 +128,60 @@ class Sheltr extends Component {
   }
 }
 
+class SharedElementComp extends Component {
+  static propTypes = {
+    readOnUnmount: PropTypes.bool,
+    readOnClick: PropTypes.bool,
+  };
+
+  static defaultProps = {
+    readOnUnmount: false,
+    readOnClick: false,
+  };
+
+  componentDidMount() {
+    this.props.sheltr.transition();
+  }
+
+  componentWillUnmount() {
+    if (this.props.readOnUnmount) {
+      this.props.sheltr.read(this.props.sharedId);
+    }
+  }
+
+  handleClick = () => {
+    if (this.props.readOnClick) {
+      this.props.sheltr.read(this.props.sharedId);
+    }
+  };
+
+  render() {
+    if (this.props.readOnClick) {
+      return this.props.children({
+        id: this.props.sharedId,
+        onClick: this.handleClick,
+      });
+    }
+
+    return this.props.children({ id: this.props.sharedId });
+  }
+}
+
+// Exported *****************************************************************
+
+// HOC
+export function withSheltr(Component) {
+  return function SheltrComponent(props) {
+    return (
+      <SheltrContext.Consumer>
+        {context => <Component {...props} sheltr={context} />}
+      </SheltrContext.Consumer>
+    );
+  };
+}
+
+// Helper component
+export const SharedElement = withSheltr(SharedElementComp);
+
+// Main provider
 export default Sheltr;

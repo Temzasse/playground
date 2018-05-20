@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { withSheltr } from './Sheltr';
+import { withSheltr, SharedElement } from './Sheltr';
 
 class ItemList extends Component {
   static propTypes = {
@@ -14,13 +14,13 @@ class ItemList extends Component {
     items: [],
   };
 
-  componentDidMount() {
-    this.props.sheltr.transition();
-  }
+  // componentDidMount() {
+  //   this.props.sheltr.transition();
+  // }
 
-  handleClick = id => {
-    this.props.sheltr.read(id);
-  };
+  // handleClick = id => {
+  //   this.props.sheltr.read(id);
+  // };
 
   render() {
     const { items, match } = this.props;
@@ -34,7 +34,12 @@ class ItemList extends Component {
               to={`${match.url}/${item.id}`}
               onClick={() => this.handleClick(item.id)}
             >
-              <Thumbnail src={item.image} id={item.id} />
+              <SharedElement sharedId={item.id} readOnClick>
+                {sheltrProps => <Thumbnail {...sheltrProps} src={item.image} />}
+              </SharedElement>
+
+              {/* <Thumbnail src={item.image} id={item.id} /> */}
+
               <ItemContent>
                 <Title>{item.title}</Title>
                 <Text>{item.text.substring(0, 40)}...</Text>
@@ -74,6 +79,19 @@ const Thumbnail = styled.img`
     height: 60px;
   }
 `;
+
+// const ThumbnailRect = styled.div`
+//   width: 90px;
+//   height: 90px;
+//   background-image: url(${props => props.src});
+//   background-position: center center;
+//   background-size: cover;
+
+//   @media screen and (max-width: 600px) {
+//     width: 80px;
+//     height: 60px;
+//   }
+// `;
 
 const ItemContent = styled.div`
   flex: 1;

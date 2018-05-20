@@ -68,6 +68,7 @@ const ButtonLink = styled.button`
   color: #637381;
   border-radius: 999px;
   background-color: #fff;
+  border: none;
   height: 40px;
   padding: 0px 24px;
   box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.1);
