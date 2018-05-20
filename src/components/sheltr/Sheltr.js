@@ -13,27 +13,60 @@ class Sheltr extends Component {
 
   static defaultProps = {
     delay: 0,
-    duration: 500,
+    duration: 400,
     easing: 'cubic-bezier(0.075, 0.82, 0.165, 1)',
   };
 
   sharedId = null;
   first = null;
   last = null;
-  measurements = null;
 
-  clear = () => {
+  clearState = () => {
     this.sharedId = null;
     this.first = null;
     this.last = null;
-    this.measurements = null;
   };
 
-  setStyles = () => {
-    const { easing, duration, delay } = this.props;
+  readFirst = id => {
+    this.clearState();
+
+    const el = document.getElementById(id);
+    const { x, y, width, height } = el.getBoundingClientRect();
+
+    this.sharedId = id;
+    this.first = { x, y, width, height };
+  };
+
+  readLast = () => {
+    const el = document.getElementById(this.sharedId);
+    const { x, y, width, height } = el.getBoundingClientRect();
+
+    /* NOTE:
+     * If image is not loaded `getBoundingClientRect` returns `height: 0`
+     * at least with Safari after some quick testing.
+     * So we need to calculate height from the width and aspect ratio
+     * of the element if the user has provided the known
+     * native width / height of the image.
+     */
+    let h = height;
+    const { sheltrWidth, sheltrHeight } = el.dataset;
+
+    if (!height && width && sheltrWidth && sheltrHeight) {
+      const aspectRatio = sheltrWidth / sheltrHeight;
+      h = width / aspectRatio;
+    }
+
+    this.last = { x, y, width, height: h };
+  };
+
+  invert = () => {
     const el = document.getElementById(this.sharedId);
 
-    const { translateX, translateY, scaleX, scaleY } = this.measurements;
+    // Calculate scale and translate for inversion
+    const scaleX = this.first.width / this.last.width;
+    const scaleY = this.first.height / this.last.height;
+    const translateX = this.first.x - this.last.x;
+    const translateY = this.first.y - this.last.y;
     const translate = `translate3d(${translateX}px, ${translateY}px, 0px)`;
     const scale = `scale(${scaleX}, ${scaleY})`;
     const transform = `${translate} ${scale}`;
@@ -45,71 +78,42 @@ class Sheltr extends Component {
       el.style.transformOrigin = 'top left';
       el.style.transform = `${transform}`;
 
-      // Set fixed width / height for more robust animation
+      // Set fixed width / height for more robust animation on Safari
       if (this.last.width > 0 && this.last.height > 0) {
         el.style.width = `${this.last.width}px`;
         el.style.height = `${this.last.height}px`;
       }
 
-      // Play
-      requestAnimationFrame(() => {
-        el.style.transition = `transform ${duration}ms ${easing} ${delay}ms`;
-        el.style.transform = 'none';
-
-        // Add some extra time to take lagginess into account.
-        // TODO: use `transitionend` instead?
-        setTimeout(() => {
-          el.style.removeProperty('width');
-          el.style.removeProperty('height');
-        }, delay + 1000);
-
-        this.clear();
-      });
+      this.play();
     });
   };
 
-  measure = () => {
-    const scaleX = this.first.width / this.last.width;
-    const scaleY = this.first.height / this.last.height;
-    const translateX = this.first.x - this.last.x;
-    const translateY = this.first.y - this.last.y;
-    this.measurements = { translateX, translateY, scaleX, scaleY };
-  };
-
-  readFirst = id => {
-    const el = document.getElementById(id);
-    const { x, y, width, height } = el.getBoundingClientRect();
-
-    this.clear();
-    this.sharedId = id;
-    this.first = { x, y, width, height };
-  };
-
-  readLast = () => {
+  play = () => {
     const el = document.getElementById(this.sharedId);
-    const { sheltrWidth, sheltrHeight } = el.dataset;
-    const aspectRatio = sheltrWidth / sheltrHeight;
+    const { easing, duration, delay } = this.props;
 
-    /* NOTE: if image is not loaded `getBoundingClientRect` returns `height: 0`
-     * at least with Safari after some quick testing.
-     * So we need to calculate height from the width and aspect ratio
-     * of the element if the user has provided the known
-     * native width / height of the image.
-     *
-     * TODO: can width be zero and mess things up?
-     */
-    const { x, y, width, height } = el.getBoundingClientRect();
-    const finalHeight = height || width / aspectRatio;
+    // Play
+    // Wait for the next frame so we know all the style changes have
+    // taken hold: https://aerotwist.com/blog/flip-your-animations/
+    requestAnimationFrame(() => {
+      el.style.transition = `transform ${duration}ms ${easing} ${delay}ms`;
+      el.style.transform = 'none';
 
-    this.last = { x, y, width, height: finalHeight };
-    this.measure();
+      // Remove temp properties after animation is finished
+      el.addEventListener('transitionend', () => {
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+      })
+
+      this.clearState();
+    });
   };
 
-  // NOTE: "First" is always read before `transition`
+  // "First" should always be read before calling `transition`
   transition = () => {
     if (this.first && this.sharedId) {
-      this.readLast(); // Last
-      this.setStyles(); // Invert & Play
+      this.readLast();
+      this.invert(); // this will call `play` to start the animation
     }
   };
 
@@ -117,7 +121,6 @@ class Sheltr extends Component {
     const context = {
       read: this.readFirst,
       transition: this.transition,
-      getSharedId: this.getSharedId,
     };
 
     return (
@@ -132,11 +135,7 @@ class SharedElementComp extends Component {
   static propTypes = {
     readOnUnmount: PropTypes.bool,
     readOnClick: PropTypes.bool,
-  };
-
-  static defaultProps = {
-    readOnUnmount: false,
-    readOnClick: false,
+    children: PropTypes.func.isRequired,
   };
 
   componentDidMount() {
@@ -169,7 +168,7 @@ class SharedElementComp extends Component {
 
 // Exported *****************************************************************
 
-// HOC
+// HOC for more manual usage
 export function withSheltr(Component) {
   return function SheltrComponent(props) {
     return (
@@ -180,8 +179,8 @@ export function withSheltr(Component) {
   };
 }
 
-// Helper component
+// Helper component to wrap shared elements
 export const SharedElement = withSheltr(SharedElementComp);
 
-// Main provider
+// Main provider component
 export default Sheltr;

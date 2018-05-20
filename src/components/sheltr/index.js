@@ -88,7 +88,7 @@ class SheltrExample extends Component {
 
     return (
       <Wrapper>
-        <Sheltr delay={400}>
+        <Sheltr delay={200}>
           <Switch>
             {/* Gallery */}
             <Route

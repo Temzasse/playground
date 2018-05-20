@@ -1,21 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled, { keyframes } from 'styled-components';
-import { withSheltr, SharedElement } from './Sheltr';
+import { SharedElement } from './Sheltr';
 
 class ItemDetails extends Component {
   static propTypes = {
-    sheltr: PropTypes.object.isRequired,
+    sheltr: PropTypes.object,
     item: PropTypes.object.isRequired,
   };
-
-  // componentDidMount() {
-  //   this.props.sheltr.transition();
-  // }
-
-  // componentWillUnmount() {
-  //   this.props.sheltr.read(this.props.item.id);
-  // }
 
   render() {
     const { item } = this.props;
@@ -23,13 +15,6 @@ class ItemDetails extends Component {
     return (
       <Wrapper>
         <BackButton onClick={this.props.history.goBack}>&larr;</BackButton>
-
-        {/* <HeaderImage
-          src={item.image}
-          id={item.id}
-          data-sheltr-width="800"
-          data-sheltr-height="600"
-        /> */}
 
         <SharedElement sharedId={item.id} readOnUnmount>
           {sheltrProps =>

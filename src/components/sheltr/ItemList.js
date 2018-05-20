@@ -2,25 +2,17 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { withSheltr, SharedElement } from './Sheltr';
+import { SharedElement } from './Sheltr';
 
 class ItemList extends Component {
   static propTypes = {
-    items: PropTypes.array,
-    sheltr: PropTypes.object.isRequired,
+    items: PropTypes.array.isRequired,
+    sheltr: PropTypes.object,
   };
 
   static defaultProps = {
     items: [],
   };
-
-  // componentDidMount() {
-  //   this.props.sheltr.transition();
-  // }
-
-  // handleClick = id => {
-  //   this.props.sheltr.read(id);
-  // };
 
   render() {
     const { items, match } = this.props;
@@ -29,22 +21,21 @@ class ItemList extends Component {
       <Wrapper>
         {items.map(item => {
           return (
-            <Item
-              key={item.id}
-              to={`${match.url}/${item.id}`}
-            >
-              {/* onClick={() => this.handleClick(item.id)} */}
-              <SharedElement sharedId={item.id} readOnClick>
-                {sheltrProps => <Thumbnail {...sheltrProps} src={item.image} />}
-              </SharedElement>
-
-              {/* <Thumbnail src={item.image} id={item.id} /> */}
-
-              <ItemContent>
-                <Title>{item.title}</Title>
-                <Text>{item.text.substring(0, 40)}...</Text>
-              </ItemContent>
-            </Item>
+            <SharedElement sharedId={item.id} readOnClick>
+              {({ id, onClick }) => (
+                <Item
+                  key={item.id}
+                  to={`${match.url}/${item.id}`}
+                  onClick={onClick}
+                >
+                  <Thumbnail id={id} src={item.image} />
+                  <ItemContent>
+                    <Title>{item.title}</Title>
+                    <Text>{item.text.substring(0, 40)}...</Text>
+                  </ItemContent>
+                </Item>
+              )}
+            </SharedElement>
           );
         })}
       </Wrapper>
