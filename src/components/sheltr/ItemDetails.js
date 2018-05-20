@@ -131,4 +131,5 @@ const Text = styled.span`
   color: #444;
 `;
 
-export default withSheltr(ItemDetails);
+// export default withSheltr(ItemDetails);
+export default ItemDetails;

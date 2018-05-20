@@ -32,8 +32,8 @@ class ItemList extends Component {
             <Item
               key={item.id}
               to={`${match.url}/${item.id}`}
-              onClick={() => this.handleClick(item.id)}
             >
+              {/* onClick={() => this.handleClick(item.id)} */}
               <SharedElement sharedId={item.id} readOnClick>
                 {sheltrProps => <Thumbnail {...sheltrProps} src={item.image} />}
               </SharedElement>
@@ -113,4 +113,5 @@ const Text = styled.span`
   color: #444;
 `;
 
-export default withSheltr(ItemList);
+// export default withSheltr(ItemList);
+export default ItemList;
