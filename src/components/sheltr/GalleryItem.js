@@ -1,7 +1,15 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { SharedElement } from './Sheltr';
+
+const propTypes = {
+  history: PropTypes.object.isRequired,
+  image: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    src: PropTypes.string.isRequired,
+  }).isRequired,
+}
 
 // NOTE: `history.goBack` is quite hacky...
 // It's only to make the example more simple.
@@ -31,5 +39,7 @@ const Img = styled.img`
   max-height: 90vh;
   height: auto;
 `;
+
+GalleryItem.propTypes = propTypes;
 
 export default GalleryItem;
