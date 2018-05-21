@@ -2,7 +2,9 @@
 
 ## Installation
 
-  npm install react-sheltr
+```
+npm install react-sheltr
+```
 
 NOTE: this is not a npm package yet...
 
