@@ -21,24 +21,54 @@ class Sheltr extends Component {
   first = null;
   last = null;
 
+  // Put `isTransitioning` inside React compoennt state so that changes made
+  // to it cause a re-render.
+  state = {
+    // TODO: not sure what this can be used for...
+    isTransitioning: false,
+  };
+
+  getSharedId = () => this.sharedId;
+
+  getSharedElements = () => {
+    return [
+      ...document.querySelectorAll(`[data-sheltr-id="${this.sharedId}"]`),
+    ];
+  };
+
+  getActiveElement = () => {
+    const els = this.getSharedElements();
+    const [el] = els.filter(({ dataset }) => !dataset.sheltrRead);
+    return el;
+  };
+
   clearState = () => {
     this.sharedId = null;
     this.first = null;
     this.last = null;
   };
 
+  unmarkSharedElements = () => {
+    this.getSharedElements().forEach(el => {
+      el.removeAttribute('data-sheltr-read');
+    });
+  };
+
   readFirst = id => {
     this.clearState();
+    this.sharedId = id;
 
-    const el = document.getElementById(id);
+    const el = this.getActiveElement();
     const { x, y, width, height } = el.getBoundingClientRect();
 
-    this.sharedId = id;
+    this.unmarkSharedElements(); // remove `data-sheltr-read` from others first
+    el.setAttribute('data-sheltr-read', 'true'); // then mark el as read
+
     this.first = { x, y, width, height };
   };
 
   readLast = () => {
-    const el = document.getElementById(this.sharedId);
+    const el = this.getActiveElement();
     const { x, y, width, height } = el.getBoundingClientRect();
 
     /* NOTE:
@@ -57,11 +87,10 @@ class Sheltr extends Component {
     }
 
     this.last = { x, y, width, height: h };
+    this.invert(el);
   };
 
-  invert = () => {
-    const el = document.getElementById(this.sharedId);
-
+  invert = el => {
     // Calculate scale and translate for inversion
     const scaleX = this.first.width / this.last.width;
     const scaleY = this.first.height / this.last.height;
@@ -84,15 +113,16 @@ class Sheltr extends Component {
         el.style.height = `${this.last.height}px`;
       }
 
-      this.play();
+      this.play(el);
     });
   };
 
-  play = () => {
-    const el = document.getElementById(this.sharedId);
+  play = el => {
     const { easing, duration, delay } = this.props;
 
     // Play
+    this.setState({ isTransitioning: true });
+
     // Wait for the next frame so we know all the style changes have
     // taken hold: https://aerotwist.com/blog/flip-your-animations/
     requestAnimationFrame(() => {
@@ -101,26 +131,32 @@ class Sheltr extends Component {
 
       // Remove temp properties after animation is finished
       el.addEventListener('transitionend', () => {
+        // Remove tmp width and height
         el.style.removeProperty('width');
         el.style.removeProperty('height');
-      })
 
-      this.clearState();
+        // Cleanup transition related styles
+        el.style.willChange = 'unset';
+        el.style.transition = 'none';
+
+        this.setState({ isTransitioning: false });
+        this.clearState();
+      });
     });
   };
 
-  // "First" should always be read before calling `transition`
+  // NOTE: "first" should always be read before calling transition
   transition = () => {
-    if (this.first && this.sharedId) {
-      this.readLast();
-      this.invert(); // this will call `play` to start the animation
-    }
+    if (!this.sharedId || this.state.isTransitioning) return; // bail
+    this.readLast();
   };
 
   render() {
     const context = {
       read: this.readFirst,
       transition: this.transition,
+      getSharedId: this.getSharedId,
+      state: this.state,
     };
 
     return (
@@ -133,36 +169,55 @@ class Sheltr extends Component {
 
 class SharedElementComp extends Component {
   static propTypes = {
-    readOnUnmount: PropTypes.bool,
-    readOnClick: PropTypes.bool,
     children: PropTypes.func.isRequired,
+    sharedId: PropTypes.string.isRequired,
+    startOnUnmount: PropTypes.bool,
+    startOnClick: PropTypes.bool,
+  };
+
+  static defaultProps = {
+    startOnClick: true,
+    transitionStyles: {},
   };
 
   componentDidMount() {
     this.props.sheltr.transition();
   }
 
+  shouldComponentUpdate() {
+    // Optimize rendering
+    return this.props.sharedId === this.props.sheltr.getSharedId();
+  }
+
   componentWillUnmount() {
-    if (this.props.readOnUnmount) {
+    if (this.props.startOnUnmount) {
       this.props.sheltr.read(this.props.sharedId);
+
+      if (this.props.completeOnUnmount) {
+        this.props.sheltr.transition();
+      }
     }
   }
 
   handleClick = () => {
-    if (this.props.readOnClick) {
-      this.props.sheltr.read(this.props.sharedId);
-    }
+    this.props.sheltr.read(this.props.sharedId);
   };
 
   render() {
-    if (this.props.readOnClick) {
-      return this.props.children({
-        id: this.props.sharedId,
-        onClick: this.handleClick,
-      });
-    }
+    const { sheltr, sharedId, startOnUnmount } = this.props;
 
-    return this.props.children({ id: this.props.sharedId });
+    // Set transition styles if shared element is under transition
+    // and determine params for children func.
+    const baseParams = {
+      ...sheltr.state, // pass state if someone wants to do something with it
+      'data-sheltr-id': sharedId,
+    };
+
+    const params = startOnUnmount
+      ? baseParams // no need for click handler
+      : { ...baseParams, onClick: this.handleClick };
+
+    return this.props.children(params);
   }
 }
 

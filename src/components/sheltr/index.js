@@ -6,11 +6,15 @@ import Sheltr from './Sheltr';
 import ItemList from './ItemList';
 import ItemDetails from './ItemDetails';
 import Gallery from './Gallery';
-import GalleryItem from './GalleryItem';
-import SheltrExamples from './SheltrExamples';
+import ExamplesList from './ExamplesList';
 
-class SheltrExample extends Component {
+class SheltrExamples extends Component {
   state = {
+    musicPlayerTrack: {
+      image: 'https://source.unsplash.com/IocJwyqRv3M/200x200',
+      artist: 'Fooband',
+      name: 'Baztrack'
+    },
     items: [
       {
         id: 'item_1',
@@ -91,7 +95,7 @@ class SheltrExample extends Component {
         <Sheltr delay={200}>
           <Switch>
             {/* Gallery */}
-            <Route
+            {/* <Route
               path={`${match.url}/gallery/:id`}
               render={({ match: { params }, ...rest }) => (
                 <GalleryItem
@@ -99,7 +103,7 @@ class SheltrExample extends Component {
                   image={this.getImage(imagesByCol, params.id)}
                 />
               )}
-            />
+            /> */}
             <Route
               path={`${match.url}/gallery`}
               render={props => <Gallery {...props} images={imagesByCol} />}
@@ -119,7 +123,8 @@ class SheltrExample extends Component {
               path={`${match.url}/list`}
               render={props => <ItemList {...props} items={items} />}
             />
-            <Route component={SheltrExamples} />
+
+            <Route component={ExamplesList} />
           </Switch>
         </Sheltr>
       </Wrapper>
@@ -131,4 +136,4 @@ const Wrapper = styled.div`
   flex: 1;
 `;
 
-export default SheltrExample;
+export default SheltrExamples;

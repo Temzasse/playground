@@ -21,14 +21,14 @@ class ItemList extends Component {
       <Wrapper>
         {items.map(item => {
           return (
-            <SharedElement sharedId={item.id} readOnClick>
-              {({ id, onClick }) => (
+            <SharedElement sharedId={item.id}>
+              {({ onClick, ...rest }) => (
                 <Item
                   key={item.id}
-                  to={`${match.url}/${item.id}`}
                   onClick={onClick}
+                  to={`${match.url}/${item.id}`}
                 >
-                  <Thumbnail id={id} src={item.image} />
+                  <Thumbnail {...rest} src={item.image} />
                   <ItemContent>
                     <Title>{item.title}</Title>
                     <Text>{item.text.substring(0, 40)}...</Text>

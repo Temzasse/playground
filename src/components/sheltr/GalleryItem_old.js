@@ -4,16 +4,18 @@ import styled from 'styled-components';
 import { SharedElement } from './Sheltr';
 
 const propTypes = {
-  hideImage: PropTypes.func.isRequired,
+  history: PropTypes.object.isRequired,
   image: PropTypes.shape({
     id: PropTypes.string.isRequired,
     src: PropTypes.string.isRequired,
   }).isRequired,
-};
+}
 
-const GalleryItem = ({ image, hideImage }) => (
-  <Wrapper onClick={hideImage}>
-    <SharedElement sharedId={image.id} startOnUnmount completeOnUnmount>
+// NOTE: `history.goBack` is quite hacky...
+// It's only to make the example more simple.
+const GalleryItem = ({ image, history }) => (
+  <Wrapper onClick={history.goBack}>
+    <SharedElement sharedId={image.id} startOnUnmount>
       {sheltrProps => <Img src={image.src} {...sheltrProps} />}
     </SharedElement>
   </Wrapper>

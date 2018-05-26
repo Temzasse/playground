@@ -1,51 +1,36 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import { SharedElement } from './Sheltr';
-import GalleryItem from './GalleryItem';
 
 class Gallery extends Component {
   static propTypes = {
     images: PropTypes.array.isRequired,
   };
 
-  state = {
-    activeImage: null,
-  };
-
-  hideActiveImage = () => {
-    this.setState({ activeImage: null });
-  };
-
   render() {
-    const { activeImage } = this.state;
-    const { images } = this.props;
+    const { images, match } = this.props;
 
     return (
       <Wrapper>
         {images.map(col => (
           <Column key={col.id}>
             {col.images.map(img => (
-              <SharedElement sharedId={img.id}>
-                {({ onClick: sheltrClickHandler, ...otherSheltrProps }) => (
-                  <Img
-                    {...otherSheltrProps}
-                    src={img.src}
+              <SharedElement sharedId={img.id} startOnClick>
+                {({ id, onClick }) => (
+                  <ImgWrapper
                     key={img.id}
-                    onClick={() => {
-                      sheltrClickHandler();
-                      this.setState({ activeImage: img });
-                    }}
-                  />
+                    to={`${match.url}/${img.id}`}
+                    onClick={onClick}
+                  >
+                    <Img id={id} src={img.src} />
+                  </ImgWrapper>
                 )}
               </SharedElement>
             ))}
           </Column>
         ))}
-
-        {activeImage && (
-          <GalleryItem image={activeImage} hideImage={this.hideActiveImage} />
-        )}
       </Wrapper>
     );
   }
@@ -73,8 +58,12 @@ const Column = styled.div`
   }
 `;
 
-const Img = styled.img`
+const ImgWrapper = styled(Link)`
+  display: block;
   margin-top: 8px;
+`;
+
+const Img = styled.img`
   width: 100%;
   height: auto;
   background-color: #eee;

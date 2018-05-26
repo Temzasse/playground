@@ -60,7 +60,7 @@ it is clicked and one when it unmounts.
 import { SharedElement } from 'react-sheltr';
 
 // Component A
-<SharedElement sharedId={idThatIsSameForAandB} readOnClick>
+<SharedElement sharedId={idThatIsSameForAandB} startOnClick>
   {sheltrProps => (
     <ImageA {...sheltrProps}>
       {/* stuff */}
@@ -69,7 +69,7 @@ import { SharedElement } from 'react-sheltr';
 </SharedElement>
 
 // Component B
-<SharedElement sharedId={idThatIsSameForAandB} readOnUnmount>
+<SharedElement sharedId={idThatIsSameForAandB} startOnUnmount>
   {sheltrProps => (
     <ImageB {...sheltrProps}>
       {/* stuff */}
@@ -81,7 +81,7 @@ import { SharedElement } from 'react-sheltr';
 In some cases you might need to apply the individual `sheltrProps`, `id` and `onClick`, to two separate components.
 
 ```javascript
-<SharedElement sharedId={youProvideThisId} readOnClick>
+<SharedElement sharedId={youProvideThisId} startOnClick>
   {({ id, onClick }) => (
     <Wrapper onClick={onClick}>
       <Image id={id} />

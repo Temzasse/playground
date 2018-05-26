@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { BrowserRouter, Route, Link } from 'react-router-dom';
 
 import Playground from './components/Playground';
-import Sheltr from './components/sheltr';
+import SheltrExamples from './components/sheltr';
 
 const NavControls = () => (
   <Route
@@ -31,7 +31,7 @@ class App extends Component {
           <NavControls />
           <Content>
             <Route exact path="/" component={Playground} />
-            <Route path="/shared-element-transitions" component={Sheltr} />
+            <Route path="/shared-element-transitions" component={SheltrExamples} />
           </Content>
         </Wrapper>
       </BrowserRouter>

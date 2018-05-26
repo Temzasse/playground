@@ -16,7 +16,7 @@ class ItemDetails extends Component {
       <Wrapper>
         <BackButton onClick={this.props.history.goBack}>&larr;</BackButton>
 
-        <SharedElement sharedId={item.id} readOnUnmount>
+        <SharedElement sharedId={item.id} startOnUnmount>
           {sheltrProps =>
             <HeaderImage
               {...sheltrProps}
