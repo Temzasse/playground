@@ -8,6 +8,7 @@ class Sheltr extends Component {
   static propTypes = {
     children: PropTypes.any.isRequired,
     delay: PropTypes.number,
+    duration: PropTypes.number,
     easing: PropTypes.string,
   };
 
@@ -29,6 +30,13 @@ class Sheltr extends Component {
   };
 
   getSharedId = () => this.sharedId;
+
+  getProps = sharedId => {
+    return {
+      ...this.state, // pass state if someone wants to do something with it
+      'data-sheltr-id': sharedId,
+    };
+  }
 
   getSharedElements = () => {
     return [
@@ -153,10 +161,10 @@ class Sheltr extends Component {
 
   render() {
     const context = {
-      read: this.readFirst,
+      start: this.readFirst,
       transition: this.transition,
       getSharedId: this.getSharedId,
-      state: this.state,
+      getProps: this.getProps,
     };
 
     return (
@@ -173,11 +181,18 @@ class SharedElementComp extends Component {
     sharedId: PropTypes.string.isRequired,
     startOnUnmount: PropTypes.bool,
     startOnClick: PropTypes.bool,
+    completeOnUnmount: PropTypes.bool,
+    sheltr: PropTypes.shape({
+      start: PropTypes.func.isRequired,
+      transition: PropTypes.func.isRequired,
+      getSharedId: PropTypes.func.isRequired,
+      getProps: PropTypes.func.isRequired,
+    }).isRequired,
   };
 
   static defaultProps = {
     startOnClick: true,
-    transitionStyles: {},
+    startOnUnmount: false,
   };
 
   componentDidMount() {
@@ -191,8 +206,13 @@ class SharedElementComp extends Component {
 
   componentWillUnmount() {
     if (this.props.startOnUnmount) {
-      this.props.sheltr.read(this.props.sharedId);
+      this.props.sheltr.start(this.props.sharedId);
 
+      // NOTE: in cases where the component that corresponds "last"
+      // was not unmounted we need to call `transition` after we read "first"
+      // component to complete the transition since there is no
+      // SharedElement component that would call `transition` on
+      // componentDidMount lifecycle hook.
       if (this.props.completeOnUnmount) {
         this.props.sheltr.transition();
       }
@@ -200,24 +220,17 @@ class SharedElementComp extends Component {
   }
 
   handleClick = () => {
-    this.props.sheltr.read(this.props.sharedId);
+    this.props.sheltr.start(this.props.sharedId);
   };
 
   render() {
     const { sheltr, sharedId, startOnUnmount } = this.props;
+    const baseProps = sheltr.getProps(sharedId);
+    const sheltrProps = startOnUnmount
+      ? baseProps // no need for click handler
+      : { ...baseProps, onClick: this.handleClick };
 
-    // Set transition styles if shared element is under transition
-    // and determine params for children func.
-    const baseParams = {
-      ...sheltr.state, // pass state if someone wants to do something with it
-      'data-sheltr-id': sharedId,
-    };
-
-    const params = startOnUnmount
-      ? baseParams // no need for click handler
-      : { ...baseParams, onClick: this.handleClick };
-
-    return this.props.children(params);
+    return this.props.children(sheltrProps);
   }
 }
 

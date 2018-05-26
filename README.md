@@ -1,5 +1,7 @@
 # React Sheltr
 
+React Sheltr helps you implement Shared Element Transitions (Sh El Tr -> Sheltr 😉) in your React applications.
+
 ## Installation
 
 ```
@@ -17,30 +19,27 @@ NOTE: this is not a npm package yet...
 
 ## What is it?
 
-React Sheltr makes it easier to implement Shared Element Transitions, which is where
-the name comes from: Sh El Tr -> Sheltr 😉
+A shared element transition is a transition between two views where some
+element common for both views is used to smoothly bridge the transition.
+In practice there can be two (or more) different elements that are transformed
+(scaled and translated) so that it looks like one element that morphs from one state to the other.
 
-What is a shared element transition you ask?
-
-Shared element transition simply means a transition between two views where some
-element common for both views is used to bridge the transition.
-In practice there are two different elements that are transformed to seem like
-one element that morphs from one element to the other.
-
-More more...
-
-**Inspiration:**
-
-- https://aerotwist.com/blog/flip-your-animations/
-- https://css-tricks.com/native-like-animations-for-page-transitions-on-the-web/
-- https://github.com/joshwcomeau/react-flip-move
+Under the hood React Sheltr uses the [FLIP](https://aerotwist.com/blog/flip-your-animations/)
+technique to do the heavy lifting for calculating and animating the shared elements.
 
 ## Usage
 
-### The simple way
+### A word of caution!
 
-First add sheltr provider somewhere up in the view hierarchy tree just like you
+React Sheltr uses the official Context API introduced in React v16.3.0
+so if you are using an older version of React than that then this module won't work 😕
+
+### Quickstart
+
+Firstly add Sheltr provider somewhere up in the view hierarchy tree just like you
 would add your redux Provider or styled-components ThemeProvider.
+Note that it doesn't really need to be at the root level but somewhere above
+the `SharedElement` components that are used later.
 
 ```javascript
 import Sheltr from 'react-sheltr';
@@ -50,41 +49,56 @@ import Sheltr from 'react-sheltr';
 </Sheltr>
 ```
 
-Then you can use `SharedElement` *render-prop* / *children as a function*
-component to define your shared elements.
+Then you can use `SharedElement` component to define and wire up your shared elements.
+This component use the *render-prop* / *children as a function* pattern to expose
+necessary props to the actual components that should be shared for the transition.
 
-Here we have two related image components: one that starts the FLIP process when
-it is clicked and one when it unmounts.
+Here we have two related image components: Component A that starts the transition flow when
+it is clicked, which is the default behaviour, and Component B when it's unmounted.
 
 ```javascript
 import { SharedElement } from 'react-sheltr';
 
 // Component A
-<SharedElement sharedId={idThatIsSameForAandB} startOnClick>
+<SharedElement sharedId={id}>
   {sheltrProps => (
-    <ImageA {...sheltrProps}>
-      {/* stuff */}
-    </ImageA>
+    <ImageA {...sheltrProps} />
   )}
 </SharedElement>
 
 // Component B
-<SharedElement sharedId={idThatIsSameForAandB} startOnUnmount>
+<SharedElement sharedId={id} startOnUnmount>
   {sheltrProps => (
-    <ImageB {...sheltrProps}>
-      {/* stuff */}
-    </ImageB>
+    <ImageB {...sheltrProps} />
   )}
 </SharedElement>
 ```
 
-In some cases you might need to apply the individual `sheltrProps`, `id` and `onClick`, to two separate components.
+In some cases you might need to apply the individual `sheltrProps` to separate components
+or maybe compose them with some existing logic you have.
+
+For this use case you can destruct the provided props and pick the ones you want.
+However, remember that you need to spread rest of the props to the component
+that should be shared.
 
 ```javascript
-<SharedElement sharedId={youProvideThisId} startOnClick>
-  {({ id, onClick }) => (
+<SharedElement sharedId={id}>
+  {({ onClick, ...rest }) => (
     <Wrapper onClick={onClick}>
-      <Image id={id} />
+      <Image {...rest} />
+    </Wrapper>
+  )}
+</SharedElement>
+
+// Or
+
+<SharedElement sharedId={id}>
+  {({ onClick, ...rest }) => (
+    <Wrapper onClick={() => {
+      this.handleClick(someData);
+      onClick();
+    }}>
+      <Image {...rest} />
     </Wrapper>
   )}
 </SharedElement>
@@ -92,12 +106,11 @@ In some cases you might need to apply the individual `sheltrProps`, `id` and `on
 
 ### The HOC way
 
-If you don't fancy the *render prop* pattern you can use `withSheltr`
-Higher Order Component to gain access to the underlying API and manually handle things
-that `ShareElement` would do for you.
+If you don't fancy the *render-prop* / *children as a function* pattern
+you can use `withSheltr` Higher Order Component to gain access to the underlying
+API and manually handle things that `ShareElement` would do for you.
 
 ```javascript
-// ComponentA
 import { withSheltr } from 'react-sheltr';
 
 class ComponentA extends Component {
@@ -106,16 +119,17 @@ class ComponentA extends Component {
   }
 
   handleClick = id => {
-    this.props.sheltr.read(id);
+    this.props.sheltr.start(id);
   };
 
   render() {
+    const { items, sheltr } = this.props;
     return (
       <Wrapper>
-        {this.props.items.map(item => {
+        {items.map(item => {
           return (
             <Item onClick={() => this.handleClick(item.id)}>
-              <Thumbnail src={item.image} id={item.id} />
+              <Thumbnail src={item.image} {...sheltr.getProps(item.id)} />
               {/* other things... */}
             </Item>
           );
@@ -129,7 +143,6 @@ export default withSheltr(ComponentA);
 ```
 
 ```javascript
-// ComponentB
 import { withSheltr } from 'react-sheltr';
 
 class ComponentB extends Component {
@@ -138,13 +151,14 @@ class ComponentB extends Component {
   }
 
   componentWillUnmount() {
-    this.props.sheltr.read(this.props.image.id);
+    this.props.sheltr.start(this.props.image.id);
   }
 
   render() {
+    const { image, sheltr } = this.props;
     return (
       <Wrapper>
-        <Img src={this.props.image.src} id={this.props.image.id} />
+        <Img src={image.src} {...sheltr.getProps(image.id)} />
         {/* other things... */}
       </Wrapper>
     );
@@ -153,6 +167,28 @@ class ComponentB extends Component {
 
 export default withSheltr(ComponentB);
 ```
+
+## API Reference
+
+`*` = required.
+
+### `<Sheltr />` (default export)
+
+| **Prop** | **Type** | **Default** | **Note** |
+|----------|----------|-------------|----------|
+| `delay` | `number` | `0`ms | The delay for all transition animations inside Sheltr provider.
+| `duration` | `number` | `400`ms | The duration for all transition animations inside Sheltr provider.
+| `easing` | `string` | `"cubic-bezier(0.075, 0.82, 0.165, 1)"` | Any valid css [transition timing function](https://www.w3schools.com/cssref/css3_pr_transition-timing-function.asp).
+
+### `<SharedElement />`
+
+| **Prop** | **Type** | **Default** | **Note** |
+|----------|----------|-------------|----------|
+| `children`* | `func` | none |
+| `sharedId`* | `string` | none | A unique id between two shared elements.
+| `startOnClick` | `bool` | true | A flag telling SharedElement to provide a click handler to start the transition flow.
+| `startOnUnmount` | `bool` | false | A flag telling SharedElement to start the transition flow when the component unmounts.
+| `completeOnUnmount` | `bool` | false | A flag telling SharedElement to complete transition flow when the component unmounts (after handling `startOnUnmount` related actions.
 
 ## Examples
 
