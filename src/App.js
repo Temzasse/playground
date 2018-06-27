@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Link } from 'react-router-dom';
 
 import Playground from './components/Playground';
 import SheltrExamples from './components/sheltr';
+import DucksTest from './components/ducksTest';
 
 const NavControls = () => (
   <Route
@@ -32,6 +33,7 @@ class App extends Component {
           <Content>
             <Route exact path="/" component={Playground} />
             <Route path="/shared-element-transitions" component={SheltrExamples} />
+            <Route path="/ducks-testing" component={DucksTest} />
           </Content>
         </Wrapper>
       </BrowserRouter>

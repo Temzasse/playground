@@ -10,6 +10,7 @@ const propTypes = {
 const Playground = () => (
   <Wrapper>
     <Heading>Playground</Heading>
+    <Link to="/ducks-testing">Ducks testing</Link>
     <Link to="/shared-element-transitions">Shared Element Transitions</Link>
   </Wrapper>
 );
