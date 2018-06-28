@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import userDucks from '../user/user.ducks';
+import orderDucks from '../order/order.ducks';
 
 class DucksTest extends Component {
   static propTypes = {
@@ -26,6 +27,9 @@ class DucksTest extends Component {
           <Fragment>
             <h1>You are NOT authenticated!</h1>
             <button onClick={this.props.login}>Login</button>
+            <button onClick={() => this.props.testThunk('test')}>
+              Test thunk
+            </button>
           </Fragment>
         )}
       </Wrapper>
@@ -47,6 +51,7 @@ export default connect(
     isAuthenticated: userDucks.selectors.getIsAuthenticated(state),
   }),
   {
+    testThunk: orderDucks.actions.testThunk,
     login: userDucks.actions.login,
     logout: userDucks.actions.logout,
   }

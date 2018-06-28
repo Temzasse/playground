@@ -1,5 +1,5 @@
-import { takeEvery } from 'redux-saga/effects';
-import { createModel } from '../helpers';
+import { takeEvery, put } from 'redux-saga/effects';
+import { createModel } from '../../reducktion';
 
 const model = createModel(
   'order',
@@ -30,6 +30,8 @@ const model = createModel(
     fetchOrders: types.FETCH_ORDERS,
     failFetchOrders: types.FETCH_ORDERS_FAILED,
     setOrders: types.RECEIVE_ORDERS,
+    // Thunks
+    testThunk,
   }))
   .selectors(({ name }) => ({
     getCustomSelector: state => [...state[name].orders, 'lol'],
@@ -37,7 +39,7 @@ const model = createModel(
   }))
   .operations(({ types, user }) => [
     takeEvery([types.FETCH_ORDERS], fetchOrdersSaga),
-    takeEvery([user.types.LOGIN], reactToLoginSaga),
+    takeEvery([user.types.LOGIN], reactToLoginSaga, { user }),
   ])
   .create();
 
@@ -45,8 +47,19 @@ function* fetchOrdersSaga() {
   yield console.log('> fetch orders');
 }
 
-function* reactToLoginSaga() {
-  yield console.log('> react to login');
+function* reactToLoginSaga({ user }, action) {
+  console.log('> react to login', user, action);
+  yield put(model.actions.fetchOrders());
+  yield put(user.actions.setProfile());
+}
+
+// Thunks
+function testThunk (arg, self, { user }) {
+  return async dispatch => {
+    console.log('> thunk', arg, self);
+    dispatch(self.actions.failFetchOrders());
+    dispatch(user.actions.setProfile());
+  }
 }
 
 export default model;

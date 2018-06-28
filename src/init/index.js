@@ -2,14 +2,13 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { fork } from 'redux-saga/effects';
 import createSagaMiddleware from 'redux-saga';
 import logger from 'redux-logger';
+import thunk from 'redux-thunk';
 
-import { createDucks } from '../components/helpers';
+import { createDucks } from '../reducktion';
 import userDucks from '../components/user/user.ducks';
 import orderDucks from '../components/order/order.ducks';
 
 const { user, order } = createDucks([userDucks, orderDucks]);
-
-console.log('> !!!', user, order);
 
 const rootReducer = combineReducers({
   [user.name]: user.getReducer(),
@@ -22,7 +21,7 @@ function* rootSaga() {
 }
 
 const sagaMiddleware = createSagaMiddleware();
-const enhancer = applyMiddleware(sagaMiddleware, logger);
+const enhancer = applyMiddleware(sagaMiddleware, thunk, logger);
 
 export default function configureStore(initialState) {
   const store = createStore(rootReducer, initialState, enhancer);

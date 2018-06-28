@@ -1,5 +1,5 @@
 import { takeEvery } from 'redux-saga/effects';
-import { createModel } from '../helpers';
+import { createModel } from '../../reducktion';
 
 const model = createModel(
   'user',
