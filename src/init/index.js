@@ -7,12 +7,18 @@ import thunk from 'redux-thunk';
 import { createDucks } from '../reducktion';
 import userDucks from '../components/user/user.ducks';
 import orderDucks from '../components/order/order.ducks';
+import settingsDucks from '../components/settings/settings.ducks';
 
-const { user, order } = createDucks([userDucks, orderDucks]);
+const { user, order, settings } = createDucks([
+  userDucks,
+  orderDucks,
+  settingsDucks,
+]);
 
 const rootReducer = combineReducers({
   [user.name]: user.getReducer(),
   [order.name]: order.getReducer(),
+  [settings.name]: settings.getReducer(),
 });
 
 function* rootSaga() {

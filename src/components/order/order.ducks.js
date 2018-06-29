@@ -30,8 +30,6 @@ const model = createModel(
     fetchOrders: types.FETCH_ORDERS,
     failFetchOrders: types.FETCH_ORDERS_FAILED,
     setOrders: types.RECEIVE_ORDERS,
-    // Thunks
-    testThunk,
   }))
   .selectors(({ name }) => ({
     getCustomSelector: state => [...state[name].orders, 'lol'],
@@ -51,15 +49,6 @@ function* reactToLoginSaga({ user }, action) {
   console.log('> react to login', user, action);
   yield put(model.actions.fetchOrders());
   yield put(user.actions.setProfile());
-}
-
-// Thunks
-function testThunk (arg, self, { user }) {
-  return async dispatch => {
-    console.log('> thunk', arg, self);
-    dispatch(self.actions.failFetchOrders());
-    dispatch(user.actions.setProfile());
-  }
 }
 
 export default model;

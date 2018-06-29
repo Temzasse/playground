@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import userDucks from '../user/user.ducks';
-import orderDucks from '../order/order.ducks';
+import settingsDucks from '../settings/settings.ducks';
 
 class DucksTest extends Component {
   static propTypes = {
@@ -14,7 +14,6 @@ class DucksTest extends Component {
 
   render() {
     const { isAuthenticated } = this.props;
-    console.log('> props', this.props);
 
     return (
       <Wrapper>
@@ -51,7 +50,7 @@ export default connect(
     isAuthenticated: userDucks.selectors.getIsAuthenticated(state),
   }),
   {
-    testThunk: orderDucks.actions.testThunk,
+    testThunk: settingsDucks.actions.testThunk,
     login: userDucks.actions.login,
     logout: userDucks.actions.logout,
   }

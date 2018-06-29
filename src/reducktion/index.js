@@ -28,7 +28,7 @@ import { all } from 'redux-saga/effects';
  * @property {Function} inject
  */
 
- /**
+/**
  * @typedef {Object} Duck
  * @property {Function} _run
  * @property {Function} _fillDeps
@@ -48,12 +48,26 @@ const isFunction = f => f && {}.toString.call(f) === '[object Function]';
 /**
  * Helper function to create prefixed types for a duck.
  * @param {string} prefix
- * @param {string[]} actionsArray
+ * @param {string[]} actionTypes
  * @returns {Types}
  */
-function createTypes(prefix, actionsArray = []) {
-  return actionsArray.reduce((acc, type) => {
+function createTypes(prefix, actionTypes = []) {
+  return actionTypes.reduce((acc, type) => {
     acc[type] = `${prefix}/${type}`;
+    return acc;
+  }, {});
+}
+
+const camelCasedAction = action =>
+  action
+    .toLowerCase()
+    .split('_')
+    .reduce((acc, x, i) => (i === 0 ? acc + x : acc + capitalize(x)), '');
+
+export function createActions(prefix, actionTypes) {
+  return actionTypes.reduce((acc, type) => {
+    const actionName = camelCasedAction(type);
+    acc[actionName] = createAction(`${prefix}/${type}`);
     return acc;
   }, {});
 }
@@ -67,19 +81,22 @@ function createTypes(prefix, actionsArray = []) {
  * @returns {DuckFuncs} Chainable duck functions
  */
 export const createModel = (modelName, typeList, initialState) => {
-  const types = createTypes(modelName, typeList);
   const funcs = {};
-  const actions = {};
   const dependencies = {};
 
-  let operations;
-  let reducer;
+  const types = createTypes(modelName, typeList);
 
-  // Auto-create initial selectors for each state field
-  let selectors = Object.keys(initialState).reduce((acc, key) => {
+  // Auto-generate initial actions
+  const actions = createActions(modelName, typeList);
+
+  // Auto-generate initial selectors for each state field
+  const selectors = Object.keys(initialState).reduce((acc, key) => {
     acc[`get${capitalize(key)}`] = state => state[modelName][key];
     return acc;
   }, {});
+
+  let operations;
+  let reducer;
 
   /**
    * Creates action creators and thunks.
@@ -87,10 +104,10 @@ export const createModel = (modelName, typeList, initialState) => {
    * @returns {DuckFuncs}
    */
   funcs.actions = actionsFunc => {
-    const actionsObj = actionsFunc({ types }) || {};
+    const userDefinedActions = actionsFunc({ types }) || {};
 
     // @ts-ignore
-    Object.entries(actionsObj).forEach(([actionName, value]) => {
+    Object.entries(userDefinedActions).forEach(([actionName, value]) => {
       if (isFunction(value)) {
         // Handle thunks -> provide necessary data: self and dependencies
         const self = { types, actions };
@@ -113,8 +130,14 @@ export const createModel = (modelName, typeList, initialState) => {
    * @returns {DuckFuncs}
    */
   funcs.selectors = selectorsFunc => {
-    const selectorsObj = selectorsFunc({ name: modelName }) || {};
-    selectors = { ...selectors, ...selectorsObj };
+    const userDefinedSelectors = selectorsFunc({ name: modelName }) || {};
+
+    // @ts-ignore
+    Object.entries(userDefinedSelectors).forEach(
+      ([selectorName, selectorFn]) => {
+        selectors[selectorName] = selectorFn;
+      }
+    );
     return funcs;
   };
 
@@ -181,7 +204,10 @@ export const createModel = (modelName, typeList, initialState) => {
     // Run curried functions with own types and dependencies
     const reducerObj = reducer({ types, initialState, ...dependencies }) || {};
     reducer = handleActions(reducerObj, initialState);
-    operations = operations({ types, ...dependencies }) || [];
+
+    if (operations) {
+      operations = operations({ types, ...dependencies }) || [];
+    }
   };
 
   /**
@@ -224,7 +250,7 @@ export const createModel = (modelName, typeList, initialState) => {
 
 /**
  * Create ducks.
- * @param {Duck[]} ducks 
+ * @param {Duck[]} ducks
  * @returns {Object.<string, Duck>}
  */
 export const createDucks = ducks => {
