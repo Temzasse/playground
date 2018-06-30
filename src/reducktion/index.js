@@ -109,9 +109,8 @@ export const createModel = (modelName, typeList, initialState) => {
     // @ts-ignore
     Object.entries(userDefinedActions).forEach(([actionName, value]) => {
       if (isFunction(value)) {
-        // Handle thunks -> provide necessary data: self and dependencies
-        const self = { types, actions };
-        actions[actionName] = (...args) => value(...args, self, dependencies);
+        // Provide dependencies to thunks
+        actions[actionName] = (...args) => value(...args, dependencies);
       } else if (typeof value === 'string') {
         // Just create normal action
         actions[actionName] = createAction(value);

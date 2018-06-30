@@ -31,10 +31,10 @@ const model = createModel(
   .create();
 
 // Thunks
-function testThunk(arg, self, { user, order }) {
+function testThunk(arg, { user, order }) {
   return async dispatch => {
     console.log('> settings thunk');
-    dispatch(self.actions.updateTheme('dark'));
+    dispatch(model.actions.updateTheme('dark'));
     dispatch(order.actions.setOrders());
     dispatch(user.actions.setProfile());
   };
