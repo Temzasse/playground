@@ -202,8 +202,11 @@ export const createModel = (modelName, typeList, initialState) => {
    */
   const _run = () => {
     // Run curried functions with own types and dependencies
-    const reducerObj = reducer({ types, initialState, ...dependencies }) || {};
-    reducer = handleActions(reducerObj, initialState);
+
+    if (reducer) {
+      const reducerObj = reducer({ types, initialState, ...dependencies }) || {};
+      reducer = handleActions(reducerObj, initialState);
+    }
 
     if (operations) {
       operations = operations({ types, ...dependencies }) || [];

@@ -83,10 +83,11 @@ describe('createModel', () => {
 
   it('should throw error when unknown action is defined', () => {
     expect(() => {
-      const model = createModel('test', ['TEST', 'OTHER'], {})
-        .actions(() => ({ incorrectAction: 1 }))
+      const model = createModel('test', ['TEST', 'OTHER'], {}).actions(() => ({
+        incorrectAction: 1,
+      }));
     }).toThrowError(/expected a string or function/);
-  })
+  });
 });
 
 describe('createDucks', () => {
@@ -148,5 +149,40 @@ describe('createDucks', () => {
     expect(() => {
       const ducks = createDucks([model]);
     }).toThrowError(/did you forget to call .create()/);
+  });
+
+  it('should create multiple ducks', () => {
+    const model1 = createModel('test1', ['TEST1'], {}).create();
+    const model2 = createModel('test2', ['TEST2'], {}).create();
+    const ducks = createDucks([model1, model2]);
+    expect(ducks.test1).toBeDefined();
+    expect(ducks.test2).toBeDefined();
+  });
+
+  it('should inject other ducks as dependency', () => {
+    const model1 = createModel('test1', ['TEST1'], {}).create();
+    const model2 = createModel('test2', ['TEST2'], {})
+      .inject('test1')
+      .reducer(({ test1 }) => ({
+        [test1.TEST1]: state => ({ ...state, foo: 1 }),
+      }))
+      .create();
+
+    const ducks = createDucks([model1, model2]);
+    expect(ducks).toBeDefined();
+  });
+
+  it('should throw error if name of dependency is typoed', () => {
+    const model1 = createModel('test1', ['TEST1'], {}).create();
+    const model2 = createModel('test2', ['TEST2'], {})
+      .inject('test3')
+      .reducer(({ test3 }) => ({
+        [test3.TEST1]: state => ({ ...state, foo: 1 }),
+      }))
+      .create();
+
+    expect(() => {
+      const ducks = createDucks([model1, model2]);
+    }).toThrowError(/There is no dependendy called 'test3'/);
   });
 });
