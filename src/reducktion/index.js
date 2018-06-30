@@ -1,11 +1,10 @@
 // @ts-check
-
 import { createAction, handleActions } from 'redux-actions';
-import { all } from 'redux-saga/effects';
 
 // Helpers -------------------------------------------------------------------
 
 // JSDoc typedefs
+// TODO: maybe use TypeScript?
 
 /**
  * @typedef {Object.<string, Function>} Action
@@ -32,6 +31,7 @@ import { all } from 'redux-saga/effects';
  * @typedef {Object} Duck
  * @property {Function} _run
  * @property {Function} _fillDeps
+ * @property {Boolean} _created
  * @property {Function} getOperations
  * @property {Function} getReducer
  * @property {String} name
@@ -44,6 +44,12 @@ import { all } from 'redux-saga/effects';
 const capitalize = word => word.charAt(0).toUpperCase() + word.slice(1);
 
 const isFunction = f => f && {}.toString.call(f) === '[object Function]';
+
+const camelCasedAction = action =>
+  action
+    .toLowerCase()
+    .split('_')
+    .reduce((acc, x, i) => (i === 0 ? acc + x : acc + capitalize(x)), '');
 
 /**
  * Helper function to create prefixed types for a duck.
@@ -58,13 +64,7 @@ function createTypes(prefix, actionTypes = []) {
   }, {});
 }
 
-const camelCasedAction = action =>
-  action
-    .toLowerCase()
-    .split('_')
-    .reduce((acc, x, i) => (i === 0 ? acc + x : acc + capitalize(x)), '');
-
-export function createActions(prefix, actionTypes) {
+function createActions(prefix, actionTypes) {
   return actionTypes.reduce((acc, type) => {
     const actionName = camelCasedAction(type);
     acc[actionName] = createAction(`${prefix}/${type}`);
@@ -217,15 +217,10 @@ export const createModel = (modelName, typeList, initialState) => {
   const getReducer = () => reducer;
 
   /**
-   * Get operations for the duck.
-   * @returns {Function}
+   * Get saga operations for the duck.
+   * @returns {Array}
    */
-  const getOperations = () => {
-    function* ops() {
-      yield all(operations);
-    }
-    return ops;
-  };
+  const getOperations = () => operations;
 
   /**
    * Collect and return all the properties of the duck.
@@ -242,6 +237,7 @@ export const createModel = (modelName, typeList, initialState) => {
       getReducer,
       _run,
       _fillDeps,
+      _created: true,
     };
   };
 
@@ -253,7 +249,7 @@ export const createModel = (modelName, typeList, initialState) => {
  * @param {Duck[]} ducks
  * @returns {Object.<string, Duck>}
  */
-export const createDucks = ducks => {
+export const createDucks = (ducks = []) => {
   const ducksByName = ducks.reduce((acc, val) => {
     acc[val.name] = val;
     return acc;
@@ -261,8 +257,19 @@ export const createDucks = ducks => {
 
   // @ts-ignore
   Object.values(ducksByName).forEach(duck => {
+    if (!duck._created) {
+      throw Error(
+        'Duck was not properly cretead before calling createDucks - did you forget to call .create()?'
+      );
+    }
+
     duck._fillDeps(ducksByName);
     duck._run();
+
+    // Users don't need these props so delete them
+    delete duck._fillDeps;
+    delete duck._run;
+    delete duck._created;
   });
 
   return ducksByName;

@@ -1,5 +1,5 @@
 import { createStore, applyMiddleware, combineReducers } from 'redux';
-import { fork } from 'redux-saga/effects';
+import { all } from 'redux-saga/effects';
 import createSagaMiddleware from 'redux-saga';
 import logger from 'redux-logger';
 import thunk from 'redux-thunk';
@@ -22,8 +22,11 @@ const rootReducer = combineReducers({
 });
 
 function* rootSaga() {
-  yield fork(user.getOperations());
-  yield fork(order.getOperations());
+  // Start all sagas
+  yield all([
+    ...user.getOperations(),
+    ...order.getOperations(),
+  ])
 }
 
 const sagaMiddleware = createSagaMiddleware();

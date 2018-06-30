@@ -39,7 +39,7 @@ const model = createModel(
     takeEvery([types.FETCH_ORDERS], fetchOrdersSaga),
     takeEvery([user.types.LOGIN], reactToLoginSaga, { user }),
   ])
-  .create()
+  .create();
 
 function* fetchOrdersSaga() {
   yield console.log('> fetch orders');
