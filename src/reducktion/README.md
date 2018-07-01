@@ -1,8 +1,18 @@
+<p align='center'>
+  <br><br><br>
+  <img src="logo.png" width="400"/>
+  <br><br><br>
+<p/>
+
 # Reducktion
 
-A helper library for Redux to reduce boilerplate and making using it more modular by following ducks pattern.
+A small helper library for Redux to reduce boilerplate and making using it more modular by following ducks pattern.
 
 ## The Idea
+
+* 🦆 **Modular architecture with ducks pattern.**
+* 🔮 **Less boilerplate.**
+* 💉 **Inject dependencies easily.**
 
 Redux gets it's fair share of critisism for the amount of boilerplate that is
 required to setup the different entities related to it: action types, action creators, reducers, selectors, handling async behaviour, etc.
@@ -61,7 +71,7 @@ Finally in the place where you combine your reducers and create the store:
 
 ```javascript
 import { createStore, combineReducers } from 'redux';
-import { createDucks } from '../reducktion';
+import { createDucks } from 'reducktion';
 import orderDucks from '../order.ducks';
 
 const { order } = createDucks([orderDucks /* other ducks... */]);
@@ -158,11 +168,11 @@ export default model;
 
 ```javascript
 import { createModel } from 'reducktion';
-import { takeEvery, put } from 'redux-saga/effects';
+import { takeEvery, takeLatest, put } from 'redux-saga/effects';
 
 const model = createModel(
   'order',
-  ['FETCH_ORDERS', 'RECEIVE_ORDERS', 'FETCH_ORDERS_FAILED'],
+  ['FETCH_ORDERS', 'RECEIVE_ORDERS', 'FETCH_ORDERS_FAILED', 'OTHER'],
   {
     orders: [],
     isLoading: false,
@@ -186,12 +196,23 @@ const model = createModel(
       orders: action.payload,
     }),
   }))
-  .operations(({ types }) => [takeEvery([types.FETCH_ORDERS], fetchOrdersSaga)])
+  .operations(({ types }) => [
+    takeEvery([types.FETCH_ORDERS], fetchOrdersSaga),
+    takeLatest([types.OTHER], otherSaga)
+  ])
   .create();
 
 function* fetchOrdersSaga() {
-  const orders = yield api.fetchOrders();
-  yield put(receive);
+  try {
+    const orders = yield api.fetchOrders();
+    yield put(model.actions.receiveOrders(orders));
+  } catch (e) {
+    yield put(model.actions.fetchOrdersFailed(orders));
+  }
+}
+
+function* otherSaga() {
+  // do something else
 }
 
 export default model;
