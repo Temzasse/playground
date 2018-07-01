@@ -141,11 +141,11 @@ const rootReducer = combineReducers({
 const store = createStore(rootReducer, initialState);
 ```
 
-Finally you can use the model of your ducks in your React components.
+Finally, let's use the duck's model in a React component.
 
 ```javascript
 import { connect } from 'react-redux';
-import order from '../order/order.ducks';
+import orderDucks from '../order/order.ducks';
 
 class SomeComponent extends Component {
   componentDidMount() {
@@ -171,20 +171,29 @@ class SomeComponent extends Component {
 
 export default connect(
   state => ({
-    orders: order.selectors.getOrders(state),
-    isLoading: order.selectors.getIsLoading(state),
+    orders: orderDucks.selectors.getOrders(state),
+    isLoading: orderDucks.selectors.getIsLoading(state),
   }),
   {
-    fetchOrders: order.actions.fetchOrders,
+    fetchOrders: orderDucks.actions.fetchOrders,
   }
 )(SomeComponent);
 ```
 
 That's it!
 
-You have encapsulated the Redux logic of a feature called `order` into a model of a so called duck.
+You have encapsulated the Redux related logic of a feature called `order` into a duck model.
 
 ## Dependency injection
+
+Let's start with a short story:
+
+It's very common that one duck model depends partially on some other duck model, and in extreme case they both depend on each other in some way! For example consider a situation where you want to fetch the existing orders of a user after he/she logs in so you import the `orderDucks` model into user duck model in order to use the `orderDucks.actions.fetchOrders()` after login. But you also want to clear the order's state after the user logs out so you import `userDucks` into order duck model to listen the `userDucks.types.LOGOUT` action type in the reducer. Now you have a circular dependency issue since both duck models are dependent on each other. When you run your app you will most likely get a `Uncaught TypeError: Cannot read property 'types' of undefined`.
+
+Reducktion solves this issue by allowing you to define the dependencies that should be injected to the model via the `inject` method.
+You can give any number of model names to `inject` and they will be provided to the model inside the various methods like `.reducer()`, `.actions()` or `.operations()`.
+
+In the below example we clear the orders in the state when the user logs out:
 
 ```javascript
 import { createModel } from 'reducktion';
@@ -217,6 +226,8 @@ export default model;
 ```
 
 ## Usage with redux-thunk
+
+Something something...
 
 ```javascript
 import { createModel } from 'reducktion';
@@ -264,9 +275,9 @@ function someThunk(args) {
 export default model;
 ```
 
-Foobar...
-
 ## Usage with redux-saga
+
+Something something...
 
 ```javascript
 import { createModel } from 'reducktion';
@@ -326,8 +337,8 @@ Foobar...
 import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { all } from 'redux-saga/effects';
 import createSagaMiddleware from 'redux-saga';
+import { createDucks } from 'reducktion';
 
-import { createDucks } from '../reducktion';
 import userDucks from '../user/user.ducks';
 import orderDucks from '../order/order.ducks';
 
