@@ -10,6 +10,10 @@
 * 🔮 **Less boilerplate.**
 * 💉 **Inject dependencies easily.**
 
+Inspiration: [ducks-modular-redux](https://github.com/erikras/ducks-modular-redux) by [Erik Rasmussen](https://github.com/erikras).
+
+---
+
 # Getting started
 
 ## Install
@@ -41,8 +45,10 @@ import { createModel } from 'reducktion';
 const model = createModel(
   // model name
   'order',
+
   // action types
   ['FETCH_ORDERS', 'RECEIVE_ORDERS', 'FETCH_ORDERS_FAILED'],
+
   // initial state
   {
     orders: [],
@@ -79,14 +85,48 @@ export default model;
 By default reducktion will auto generate actions based on the provided action types
 and selectors based on the field names in your initial state object.
 
-This is to make it more convenient ...
+So, the non-auto-generatad version of the above example would look like this:
+
+```javascript
+import { createModel } from 'reducktion';
+
+const model = createModel(
+  'order',
+  ['FETCH_ORDERS', 'RECEIVE_ORDERS', 'FETCH_ORDERS_FAILED'],
+  {
+    orders: [],
+    isLoading: false,
+    hasError: false,
+  }
+)
+  .reducer(({ types }) => ({
+    // ...
+  }))
+  // define actions manually
+  .actions(({ types }) => {
+    fetchOrders: types.FETCH_ORDERS,
+    fetchOrdersFailed: types.FETCH_ORDERS_FAILED,
+    receiveOrders: types.RECEIVE_ORDERS,
+  })
+  // define selectors manually
+  .selectors(({ name }) => {
+    getOrders: state => state[name].orders,
+    getIsLoading: state => state[name].isLoading,
+    getHasError: state => state[name].hasError,
+  })
+  .create();
+
+export default model;
+```
+
+> Auto generating the actions and selectors is merely a nice to have convenience that you should not rely on in a bigger application since every time you change your state field name or action type name your actions / selectors **WILL CHANGE** respectfully! For example if you have a field called `loading` and you change it to `isLoading` the corresponding generated selector will change from `getLoading` to `getIsLoading`.
 
 Finally in the place where you combine your reducers and create the store:
 
 ```javascript
 import { createStore, combineReducers } from 'redux';
 import { createDucks } from 'reducktion';
-import orderDucks from '../order.ducks';
+import orderDucks from '../order/order.ducks';
 
 const { order } = createDucks([orderDucks /* other ducks... */]);
 
@@ -97,6 +137,49 @@ const rootReducer = combineReducers({
 
 const store = createStore(rootReducer, initialState);
 ```
+
+Finally you can use the model of your ducks in your React components.
+
+```javascript
+import { connect } from 'react-redux';
+import order from '../order/order.ducks';
+
+class SomeComponent extends Component {
+  componentDidMount() {
+    this.props.fetchOrders();
+  }
+
+  render() {
+    const { isLoading, orders } = this.props;
+
+    if (isLoading) {
+      return <span>Loading orders...</span>;
+    }
+
+    return (
+      <div>
+        {orders.map(order => (
+          /* render order here */
+        ))}
+      </div>
+    )
+  }
+}
+
+export default connect(
+  state => ({
+    orders: order.selectors.getOrders(state),
+    isLoading: order.selectors.getIsLoading(state),
+  }),
+  {
+    fetchOrders: order.actions.fetchOrders,
+  }
+)(SomeComponent);
+```
+
+That's it!
+
+You have encapsulated the Redux logic of a feature called `order` into a model of a so called duck.
 
 ## Dependency injection
 
@@ -211,8 +294,8 @@ const model = createModel(
     }),
   }))
   .operations(({ types }) => [
-    takeEvery([types.FETCH_ORDERS], fetchOrdersSaga),
-    takeLatest([types.OTHER], otherSaga)
+    takeEvery(types.FETCH_ORDERS, fetchOrdersSaga),
+    takeLatest(types.OTHER, otherSaga)
   ])
   .create();
 
