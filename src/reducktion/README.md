@@ -4,18 +4,32 @@
   <br><br><br>
 <p/>
 
-# Reducktion
-
-A small helper library for Redux to reduce boilerplate and making using it more modular by following ducks pattern.
-
-## The Idea
+*A small helper library for Redux to reduce boilerplate and enforce a more modular architecture by following the ducks pattern.*
 
 * 🦆 **Modular architecture with ducks pattern.**
 * 🔮 **Less boilerplate.**
 * 💉 **Inject dependencies easily.**
 
+# Getting started
+
+## Install
+
+```sh
+$ npm install reducktion
+```
+
+or
+
+```sh
+$ yarn add reducktion
+```
+
+## The Idea
+
 Redux gets it's fair share of critisism for the amount of boilerplate that is
 required to setup the different entities related to it: action types, action creators, reducers, selectors, handling async behaviour, etc.
+
+More here...
 
 ## Usage
 
