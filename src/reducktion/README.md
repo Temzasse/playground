@@ -215,7 +215,7 @@ const model = createModel(
     }),
     // ... other own reducers
     // then use injected user model
-    [user.LOGOUT]: state => ({
+    [user.types.LOGOUT]: state => ({
       ...state,
       orders: [],
     }),
@@ -364,4 +364,89 @@ const enhancer = applyMiddleware(sagaMiddleware);
 const store = createStore(rootReducer, initialState, enhancer);
 
 sagaMiddleware.run(rootSaga);
+```
+
+## Example with everything
+
+Let's cram all the goodness into one duck model.
+
+```javascript
+import { createModel } from 'reducktion';
+import { takeEvery, takeLatest, put } from 'redux-saga/effects';
+
+const model = createModel(
+  'order',
+  ['FETCH_ORDERS', 'RECEIVE_ORDERS', 'FETCH_ORDERS_FAILED'],
+  {
+    orders: [],
+    isLoading: false,
+    hasError: false,
+  }
+)
+  .inject('user')
+  .reducer(({ types, user, initialState }) => ({
+    [types.FETCH_ORDERS]: state => ({
+      ...state,
+      isLoading: true,
+    }),
+    [types.FETCH_ORDERS_FAILED]: state => ({
+      ...state,
+      isLoading: false,
+      hasError: true,
+    }),
+    [types.RECEIVE_ORDERS]: (state, action) => ({
+      ...state,
+      isLoading: false,
+      hasError: false,
+      orders: action.payload,
+    }),
+    // clear state when user logs out
+    [user.types.LOGOUT]: () => ({ ...initialState }),
+  }))
+  .actions(({ types }) => {
+    fetchOrders: types.FETCH_ORDERS,
+    fetchOrdersFailed: types.FETCH_ORDERS_FAILED,
+    receiveOrders: types.RECEIVE_ORDERS,
+    fetchOrders, // or as a thunk
+  })
+  .selectors(({ name }) => {
+    getOrders: state => state[name].orders,
+    getIsLoading: state => state[name].isLoading,
+    getHasError: state => state[name].hasError,
+  })
+  .operations(({ types, user }) => [
+    // Provide injected user model to saga handler too
+    takeEvery(types.FETCH_ORDERS, fetchOrdersSaga, { user }),
+  ])
+  .create();
+
+// Thunks
+// Note that thunks automatically gain access to models dependencies
+// they are provided as the last argument to the thunk function.
+function fetchOrders(args, { user }) {
+  return async dispatch => {
+    try {
+      const orders = await api.fetchOrders(args);
+      dispatch(model.actions.receiveOrders(orders));
+    } catch (e) {
+      dispatch(model.actions.fetchOrdersFailed());
+      // logout the user, just because.
+      dispatch(user.actions.logout());
+    }
+  };
+}
+
+// Sagas
+function* fetchOrdersSaga({ user }, action) {
+  try {
+    const orders = yield api.fetchOrders();
+    yield put(model.actions.receiveOrders(orders));
+  } catch (e) {
+    yield put(model.actions.fetchOrdersFailed(orders));
+    // logout the user, just because.
+    yield put(user.actions.logout());
+  }
+}
+
+export default model;
 ```
