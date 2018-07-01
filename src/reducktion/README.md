@@ -10,7 +10,10 @@
 * 🔮 **Less boilerplate.**
 * 💉 **Inject dependencies easily.**
 
-Inspiration: [ducks-modular-redux](https://github.com/erikras/ducks-modular-redux) by [Erik Rasmussen](https://github.com/erikras).
+
+---
+
+Inspiration: [Ducks: Redux Reducer Bundles](https://github.com/erikras/ducks-modular-redux).
 
 ---
 
