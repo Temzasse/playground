@@ -122,7 +122,7 @@ const model = createModel(
 export default model;
 ```
 
-> Auto generating the actions and selectors is merely a nice to have convenience that you should not rely on in a bigger application since every time you change your state field name or action type name your actions / selectors **WILL CHANGE** respectfully! For example if you have a field called `loading` and you change it to `isLoading` the corresponding generated selector will change from `getLoading` to `getIsLoading`.
+> Auto generating the actions and selectors is merely a nice-to-have convenience that you should not rely on in a bigger application since every time you change your state field name or action type name your actions / selectors **WILL CHANGE** respectfully! For example if you have a field called `loading` and you change it to `isLoading` the corresponding generated selector will change from `getLoading` to `getIsLoading`.
 
 Finally in the place where you combine your reducers and create the store:
 
@@ -264,6 +264,8 @@ function someThunk(args) {
 export default model;
 ```
 
+Foobar...
+
 ## Usage with redux-saga
 
 ```javascript
@@ -316,4 +318,39 @@ function* otherSaga() {
 }
 
 export default model;
+```
+
+Foobar...
+
+```javascript
+import { createStore, applyMiddleware, combineReducers } from 'redux';
+import { all } from 'redux-saga/effects';
+import createSagaMiddleware from 'redux-saga';
+
+import { createDucks } from '../reducktion';
+import userDucks from '../user/user.ducks';
+import orderDucks from '../order/order.ducks';
+
+const { user, order } = createDucks([userDucks, orderDucks]);
+
+const rootReducer = combineReducers({
+  [user.name]: user.getReducer(),
+  [order.name]: order.getReducer(),
+  /* other reducers... */
+});
+
+function* rootSaga() {
+  // Start all sagas
+  yield all([
+    ...user.getOperations(),
+    ...order.getOperations(),
+    /* other saga operations... */
+  ])
+}
+
+const sagaMiddleware = createSagaMiddleware();
+const enhancer = applyMiddleware(sagaMiddleware);
+const store = createStore(rootReducer, initialState, enhancer);
+
+sagaMiddleware.run(rootSaga);
 ```
