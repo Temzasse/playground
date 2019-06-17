@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { useGesture } from 'react-use-gesture';
 import { useSpring, animated } from 'react-spring';
 import styled, { css, createGlobalStyle } from 'styled-components';
-import clamp from 'lodash.clamp';
 
 import {
   disableBodyScroll,
@@ -11,15 +10,7 @@ import {
   clearAllBodyScrollLocks,
 } from 'body-scroll-lock';
 
-function usePrevious(value) {
-  const ref = React.useRef();
-
-  React.useEffect(() => {
-    ref.current = value;
-  }, [value]);
-
-  return ref.current;
-}
+import { clamp, usePrevious, EMPTY_THEME } from './utils';
 
 const StateContext = React.createContext();
 const DispatchContext = React.createContext();
@@ -71,14 +62,18 @@ const initialState = {
   sheetItems: [],
 };
 
-export function BottomSheetProvider({ children, blurTarget }) {
+export function BottomSheetProvider({
+  children,
+  blurTarget,
+  theme = EMPTY_THEME,
+}) {
   const [state, dispatch] = React.useReducer(bottomSheetReducer, initialState);
 
   return (
     <StateContext.Provider value={state}>
       <DispatchContext.Provider value={dispatch}>
         {children}
-        <BottomSheetPortal blurTarget={blurTarget} />
+        <BottomSheetPortal blurTarget={blurTarget} theme={theme} />
       </DispatchContext.Provider>
     </StateContext.Provider>
   );
@@ -98,7 +93,7 @@ export function useBottomSheet() {
 
 const SCREEN_HEIGHT = window.innerHeight;
 const SHEET_ITEM_HEIGHT = 60;
-const SHEET_BOTTOM_PAD = 200;
+const SHEET_BOTTOM_PAD = 150;
 
 const BottomSheetPortal = props => {
   const portalRef = React.useRef(null);
@@ -122,13 +117,13 @@ const BottomSheetPortal = props => {
   return ReactDOM.createPortal(bottomSheet, portalRef.current);
 };
 
-const BottomSheet = ({ blurTarget }) => {
+const BottomSheet = ({ blurTarget, theme }) => {
   const { isOpen, sheetItems } = useBottomSheetState();
   const prevOpen = usePrevious(isOpen);
   const dispatch = useBottomSheetDispatch();
   const sheetRef = React.useRef();
 
-  const sheetHeight = Math.min(
+  const sheetHeight = Math.max(
     sheetItems.length * SHEET_ITEM_HEIGHT + SHEET_BOTTOM_PAD,
     window.innerHeight / 2
   );
@@ -136,7 +131,7 @@ const BottomSheet = ({ blurTarget }) => {
   const [{ x, y }, set] = useSpring(() => ({
     x: 0,
     y: 0,
-    config: { mass: 1, tension: 210, friction: 20 },
+    config: { mass: 1, tension: 210, friction: 25 },
   }));
 
   const closeSheet = React.useCallback(() => {
@@ -185,11 +180,18 @@ const BottomSheet = ({ blurTarget }) => {
 
         <Sheet
           {...bindGesture()}
-          style={{ transform: y.interpolate(y => `translateY(${y}px)`) }}
+          style={{
+            ...theme.sheet,
+            transform: y.interpolate(y => `translateY(${y}px)`),
+          }}
           ref={sheetRef}
         >
           {sheetItems.map(item => (
-            <SheetItem onClick={item.onClick} key={item.label}>
+            <SheetItem
+              key={item.label}
+              onClick={item.onClick}
+              style={theme.sheetItem}
+            >
               {item.label}
             </SheetItem>
           ))}
@@ -203,7 +205,6 @@ const BottomSheet = ({ blurTarget }) => {
   );
 };
 
-// NOTE: `position: fixed` this will lose the scroll position for the body...
 const BlurHandler = createGlobalStyle`
   ${props =>
     props.blurTarget &&
@@ -245,7 +246,7 @@ const Sheet = styled(animated.div)`
   background-color: #fff;
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
-  box-shadow: 0px -2px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px -2px 16px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   padding-top: 8px;
@@ -253,8 +254,8 @@ const Sheet = styled(animated.div)`
   width: 100vw;
 
   @media screen and (min-width: 700px) {
-    width: 40vw;
-    left: calc(50% - 20vw);
+    width: 40vw !important;
+    left: calc(50% - 20vw) !important;
   }
 `;
 
@@ -264,6 +265,11 @@ const SheetItem = styled.div`
   display: flex;
   align-items: center;
   border-bottom: 1px solid #f5f5f5;
+  color: #222;
+
+  &:last-child {
+    border-bottom: none !important;
+  }
 `;
 
 export default BottomSheet;
