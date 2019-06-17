@@ -1,4 +1,4 @@
-import { createModel } from '../../reducktion';
+import { createModel } from 'reducktion';
 
 const model = createModel(
   'settings',

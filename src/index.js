@@ -7,12 +7,15 @@ import './index.css';
 // import registerServiceWorker from './registerServiceWorker';
 import configureStore from './init';
 import App from './App';
+import { BottomSheetProvider } from './components/bottom-sheet/BottomSheet';
 
 const store = configureStore();
 
 const AppWrapper = () => (
   <Provider store={store}>
-    <App />
+    <BottomSheetProvider blurTarget="#root">
+      <App />
+    </BottomSheetProvider>
   </Provider>
 );
 

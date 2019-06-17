@@ -12,6 +12,7 @@ const Playground = () => (
     <Heading>Playground</Heading>
     <Link to="/ducks-testing">Ducks testing</Link>
     <Link to="/shared-element-transitions">Shared Element Transitions</Link>
+    <Link to="/map-visualization">Map Visualization</Link>
   </Wrapper>
 );
 

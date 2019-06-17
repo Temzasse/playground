@@ -1,5 +1,5 @@
 import { takeEvery, put } from 'redux-saga/effects';
-import { createModel } from '../../reducktion';
+import { createModel } from 'reducktion';
 
 const model = createModel(
   'order',

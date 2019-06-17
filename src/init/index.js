@@ -3,8 +3,8 @@ import { all } from 'redux-saga/effects';
 import createSagaMiddleware from 'redux-saga';
 import logger from 'redux-logger';
 import thunk from 'redux-thunk';
+import { createDucks } from 'reducktion';
 
-import { createDucks } from '../reducktion';
 import userDucks from '../components/user/user.ducks';
 import orderDucks from '../components/order/order.ducks';
 import settingsDucks from '../components/settings/settings.ducks';

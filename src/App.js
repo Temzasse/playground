@@ -5,6 +5,8 @@ import { BrowserRouter, Route, Link } from 'react-router-dom';
 import Playground from './components/Playground';
 import SheltrExamples from './components/sheltr';
 import DucksTest from './components/ducksTest';
+import MapVisualization from './components/map-visualization';
+import BottomSheet from './components/bottom-sheet';
 
 const NavControls = () => (
   <Route
@@ -29,12 +31,26 @@ class App extends Component {
     return (
       <BrowserRouter basename={process.env.PUBLIC_URL}>
         <Wrapper>
-          <NavControls />
+          {/* <NavControls /> */}
           <Content>
             <Route exact path="/" component={Playground} />
-            <Route path="/shared-element-transitions" component={SheltrExamples} />
+            <Route
+              path="/shared-element-transitions"
+              component={SheltrExamples}
+            />
             <Route path="/ducks-testing" component={DucksTest} />
+            <Route path="/map-visualization" component={MapVisualization} />
+            <Route path="/bottom-sheet" component={BottomSheet} />
           </Content>
+          <div
+            style={{
+              height: '100vh',
+              width: '100vw',
+              backgroundSize: 'cover',
+              backgroundImage:
+                'url(https://source.unsplash.com/random/1920x1080)',
+            }}
+          />
         </Wrapper>
       </BrowserRouter>
     );
@@ -45,8 +61,9 @@ const Wrapper = styled.div`
   width: 100vw;
   height: 100%;
   min-height: 100vh;
-  padding: 32px 0px;
   background-color: #dfe3e8;
+  margin-bottom: 200px;
+  /* padding: 32px 0px; */
 `;
 
 const Content = styled.div`
