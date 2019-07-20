@@ -6,6 +6,7 @@
   "dependencies": {
     "@taito/react-sheltr": "1.0.1",
     "body-scroll-lock": "2.6.1",
+    "framer-motion": "1.2.4",
     "gh-pages": "1.1.0",
     "lodash.clamp": "4.0.3",
     "react": "16.8.6",

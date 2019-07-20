@@ -1,8 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { motion, useSpring, AnimatePresence } from 'framer-motion';
+import { useGesture } from 'react-use-gesture';
+import { useSpring, animated } from 'react-spring';
 import styled, { css, createGlobalStyle } from 'styled-components';
-import { usePrevious, EMPTY_THEME } from './utils';
+
+import {
+  disableBodyScroll,
+  enableBodyScroll,
+  clearAllBodyScrollLocks,
+} from 'body-scroll-lock';
+
+import { clamp, usePrevious, EMPTY_THEME } from './utils';
 
 const StateContext = React.createContext();
 const DispatchContext = React.createContext();
@@ -83,6 +91,10 @@ export function useBottomSheet() {
   );
 }
 
+const SCREEN_HEIGHT = window.innerHeight;
+const SHEET_ITEM_HEIGHT = 60;
+const SHEET_BOTTOM_PAD = 150;
+
 const BottomSheetPortal = props => {
   const portalRef = React.useRef(null);
 
@@ -105,81 +117,85 @@ const BottomSheetPortal = props => {
   return ReactDOM.createPortal(bottomSheet, portalRef.current);
 };
 
-const SHEET_ITEM_HEIGHT = 60;
-const SHEET_BOTTOM_PAD = 150;
-const SPRING_CONFIG = { stiffness: 200, damping: 15, mass: 0.5 };
-
 const BottomSheet = ({ blurTarget, theme }) => {
   const { isOpen, sheetItems } = useBottomSheetState();
   const prevOpen = usePrevious(isOpen);
   const dispatch = useBottomSheetDispatch();
+  const sheetRef = React.useRef();
 
-  const closeY = window.innerHeight + 50; // Add padding for closing animation
-  const openY = Math.max(
-    sheetItems.length * SHEET_ITEM_HEIGHT - SHEET_BOTTOM_PAD,
+  const sheetHeight = Math.max(
+    sheetItems.length * SHEET_ITEM_HEIGHT + SHEET_BOTTOM_PAD,
     window.innerHeight / 2
   );
 
-  const y = useSpring(closeY, SPRING_CONFIG);
+  const [{ x, y }, set] = useSpring(() => ({
+    x: 0,
+    y: 0,
+    config: { mass: 1, tension: 210, friction: 25 },
+  }));
 
-  const handleDragEnd = React.useCallback(
-    (e, { velocity }) => {
-      if (velocity.y > 500) {
-        // User flicked the sheet down
-        dispatch({ type: 'close' });
+  const closeSheet = React.useCallback(() => {
+    set({ y: 0 });
+    dispatch({ type: 'close' });
+    enableBodyScroll(sheetRef.current);
+  }, [dispatch, set]);
+
+  const openSheet = React.useCallback(() => {
+    set({ y: -sheetHeight });
+    disableBodyScroll(sheetRef.current);
+  }, [set, sheetHeight]);
+
+  const bindGesture = useGesture({
+    onDrag: ({ delta, temp = [x.getValue(), y.getValue()] }) => {
+      set({
+        y: clamp(temp[1] + delta[1], -sheetHeight - 50, SCREEN_HEIGHT),
+      });
+      return temp;
+    },
+    onDragEnd: ({ delta }) => {
+      if (delta[1] < sheetHeight / 3) {
+        openSheet();
       } else {
-        // Snap back to original position
-        y.stop();
-        y.set(openY);
+        closeSheet();
       }
     },
-    [dispatch, openY, y]
-  );
+  });
 
   React.useEffect(() => {
-    if (prevOpen && !isOpen) dispatch({ type: 'close' });
-  }, [dispatch, isOpen, prevOpen]);
+    if (isOpen) {
+      openSheet();
+    } else if (prevOpen && !isOpen) {
+      closeSheet();
+    }
+  }, [closeSheet, isOpen, openSheet, prevOpen]);
+
+  React.useEffect(() => {
+    return () => clearAllBodyScrollLocks();
+  }, []);
 
   return (
     <React.Fragment>
       <Wrapper isOpen={isOpen}>
-        <AnimatePresence>
-          {isOpen && (
-            <Backdrop
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => dispatch({ type: 'close' })}
-            />
-          )}
-        </AnimatePresence>
+        <Backdrop isOpen={isOpen} onClick={closeSheet} />
 
-        <AnimatePresence>
-          {isOpen && (
-            <Sheet
-              key="sheet"
-              drag="y"
-              dragConstraints={{ top: openY }}
-              dragElastic={0.3}
-              onDragEnd={handleDragEnd}
-              initial={{ y: closeY }}
-              animate={{ y: openY }}
-              exit={{ y: closeY }}
-              style={{ ...theme.sheet, y }}
+        <Sheet
+          {...bindGesture()}
+          style={{
+            ...theme.sheet,
+            transform: y.interpolate(y => `translateY(${y}px)`),
+          }}
+          ref={sheetRef}
+        >
+          {sheetItems.map(item => (
+            <SheetItem
+              key={item.label}
+              onClick={item.onClick}
+              style={theme.sheetItem}
             >
-              {sheetItems.map(item => (
-                <SheetItem
-                  key={item.label}
-                  onTap={item.onClick}
-                  style={theme.sheetItem}
-                >
-                  {item.label}
-                </SheetItem>
-              ))}
-            </Sheet>
-          )}
-        </AnimatePresence>
+              {item.label}
+            </SheetItem>
+          ))}
+        </Sheet>
       </Wrapper>
 
       {blurTarget && (
@@ -197,7 +213,7 @@ const BlurHandler = createGlobalStyle`
         will-change: filter, transform;
         transition: filter 200ms linear, transform 200ms linear;
         filter: blur(${props.shouldBlur ? 6 : 0}px);
-        transform: scale(${props.shouldBlur ? 1.05 : 1});
+        transform: scale(${props.shouldBlur ? 1.02 : 1});
       }
     `}
 `;
@@ -212,18 +228,21 @@ const Wrapper = styled.div`
   pointer-events: ${props => (props.isOpen ? 'auto' : 'none')};
 `;
 
-const Backdrop = styled(motion.div)`
+const Backdrop = styled.div`
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
   background-color: rgba(51, 51, 51, 0.5);
+  will-change: opacity;
+  transition: opacity 100ms cubic-bezier(0.075, 0.82, 0.165, 1);
+  opacity: ${props => (props.isOpen ? 1 : 0)};
 `;
 
-const Sheet = styled(motion.div)`
+const Sheet = styled(animated.div)`
   position: absolute;
-  top: 0;
+  top: 100vh;
   background-color: #fff;
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
@@ -231,8 +250,7 @@ const Sheet = styled(motion.div)`
   display: flex;
   flex-direction: column;
   padding-top: 8px;
-  padding-bottom: 100px;
-  height: calc(100vh + 100px);
+  height: 100vh;
   width: 100vw;
 
   @media screen and (min-width: 700px) {
@@ -241,7 +259,7 @@ const Sheet = styled(motion.div)`
   }
 `;
 
-const SheetItem = styled(motion.div)`
+const SheetItem = styled.div`
   padding: 0px 16px;
   height: ${SHEET_ITEM_HEIGHT}px;
   display: flex;

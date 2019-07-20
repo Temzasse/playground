@@ -14,7 +14,7 @@ const store = configureStore();
 
 const AppWrapper = () => (
   <Provider store={store}>
-    <BottomSheetProvider blurTarget="#root" theme={sheetThemes.ios}>
+    <BottomSheetProvider blurTarget="#root">
       <App />
     </BottomSheetProvider>
   </Provider>

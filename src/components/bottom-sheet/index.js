@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { useBottomSheet } from './BottomSheet';
 
+// #1D9A4C
+
 const BottomSheetExample = () => {
   const { openBottomSheet, closeBottomSheet } = useBottomSheet();
 
