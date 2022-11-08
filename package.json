@@ -14,7 +14,7 @@
     "react-map-gl": "4.0.2",
     "react-redux": "5.0.7",
     "react-router-dom": "4.2.2",
-    "react-scripts": "3.0.1",
+    "react-scripts": "5.0.1",
     "react-spring": "8.0.25",
     "react-use-gesture": "5.1.2",
     "reducktion": "1.0.0",
