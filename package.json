@@ -1,52 +1,37 @@
 {
   "name": "playground",
-  "version": "0.1.0",
   "private": true,
-  "homepage": "https://temzasse.github.io/playground",
-  "dependencies": {
-    "@taito/react-sheltr": "1.0.1",
-    "body-scroll-lock": "2.6.1",
-    "framer-motion": "1.2.4",
-    "gh-pages": "1.1.0",
-    "lodash.clamp": "4.0.3",
-    "react": "16.8.6",
-    "react-dom": "16.8.6",
-    "react-map-gl": "4.0.2",
-    "react-redux": "5.0.7",
-    "react-router-dom": "4.2.2",
-    "react-scripts": "3.0.1",
-    "react-spring": "8.0.25",
-    "react-use-gesture": "5.1.2",
-    "reducktion": "1.0.0",
-    "redux": "4.0.0",
-    "redux-actions": "2.4.0",
-    "redux-logger": "3.0.6",
-    "redux-saga": "0.16.0",
-    "redux-thunk": "2.3.0",
-    "styled-components": "4.3.1"
-  },
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "install:clean": "rm -rf node_modules && npm install",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "dev": "vite --port 4000",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format:write": "prettier --write ./src",
+    "format:check": "prettier --check ./src",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.28.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-error-boundary": "4.0.13",
+    "react-router-dom": "6.22.3",
+    "use-deep-compare": "1.2.1"
   },
   "devDependencies": {
-    "jest": "24.8.0"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "@tanstack/eslint-plugin-query": "5.27.7",
+    "@types/react": "18.2.64",
+    "@types/react-dom": "18.2.21",
+    "@typescript-eslint/eslint-plugin": "7.1.1",
+    "@typescript-eslint/parser": "7.1.1",
+    "@vitejs/plugin-react": "4.2.1",
+    "eslint": "8.57.0",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-react-refresh": "0.4.5",
+    "prettier": "3.2.5",
+    "typescript": "5.4.2",
+    "vite": "5.1.6",
+    "vite-tsconfig-paths": "4.3.2"
   }
 }
