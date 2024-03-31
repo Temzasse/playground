@@ -24,11 +24,29 @@ export function Sidebar() {
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
+        maxHeight: 'calc(100vh - 80px)',
+        overflow: 'auto',
       }}
     >
       <h3>States</h3>
 
       <ul style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <li>
+          <button
+            onClick={() => handleSelect('')}
+            style={{
+              appearance: 'none',
+              border: 'none',
+              backgroundColor: 'transparent',
+              cursor: 'pointer',
+              padding: 0,
+              textAlign: 'left',
+              fontWeight: selectedState === '' ? 'bold' : 'normal',
+            }}
+          >
+            All
+          </button>
+        </li>
         {data.map((state) => (
           <li key={state}>
             <button

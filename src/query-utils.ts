@@ -7,6 +7,7 @@ import {
   UseSuspenseQueryOptions,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { useSpinDelay } from 'spin-delay';
 
 export function useSuspenseQueryDeferred<
   TQueryFnData = unknown,
@@ -17,6 +18,6 @@ export function useSuspenseQueryDeferred<
   const queryKey = useDeepCompareMemo(() => options.queryKey, [options.queryKey]);
   const deferredQueryKey = useDeferredValue(queryKey);
   const query = useSuspenseQuery({ ...options, queryKey: deferredQueryKey });
-  const isPending = deferredQueryKey !== queryKey;
-  return { ...query, isPending };
+  const isSuspending = useSpinDelay(deferredQueryKey !== queryKey);
+  return { ...query, isSuspending };
 }

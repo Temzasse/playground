@@ -1,13 +1,10 @@
 import { queryOptions } from '@tanstack/react-query';
 
-import data from './data.json';
 import { sleep } from '@/utils';
 import { useSuspenseQueryDeferred } from '@/query-utils';
 
-export type State = keyof typeof data;
-
 type CitiesParams = {
-  state: State | null;
+  state: string | null;
   searchTerm: string;
   page: number;
   pageSize: number;
@@ -41,22 +38,22 @@ export function useCitiesQuery(params: CitiesParams) {
 // Fetchers
 
 async function fetchStates() {
-  await sleep(2000);
+  const data = await fetchData();
   return Object.keys(data);
 }
 
 async function fetchCities(params: CitiesParams) {
-  await sleep(2000);
-
   // if (Math.random() < 0.5) {
   //   throw new Error('Random error');
   // }
+
+  const data = await fetchData();
 
   const start = (params.page - 1) * params.pageSize;
   const end = start + params.pageSize;
   const baseCities = params.state ? data[params.state] : Object.values(data).flat();
   const filteredCities = baseCities.filter((city) =>
-    city.toLowerCase().includes(params.searchTerm.toLowerCase())
+    city.name.toLowerCase().includes(params.searchTerm.toLowerCase())
   );
   const paginatedCities = filteredCities.slice(start, end);
 
@@ -64,4 +61,18 @@ async function fetchCities(params: CitiesParams) {
     cities: paginatedCities,
     total: filteredCities.length,
   };
+}
+
+async function fetchData(): Promise<Record<string, Array<{ name: string; state: string }>>> {
+  const latency = (window as any).__LATENCY__ || 0;
+
+  await sleep(latency);
+
+  const data = (await fetch('/data.json').then((res) => res.json())) as Record<string, string[]>;
+
+  return Object.fromEntries(
+    Object.entries(data).map(
+      ([state, cities]) => [state, cities.map((name) => ({ name, state }))] as const
+    )
+  );
 }
