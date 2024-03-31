@@ -8,9 +8,15 @@ export function Sidebar() {
 
   function handleSelect(value: string) {
     setSearchParams((params) => {
-      params.set('state', value);
+      if (!value) {
+        params.delete('state');
+      } else {
+        params.set('state', value);
+      }
+
       params.set('page', '1');
       params.delete('search');
+
       return params;
     });
   }
@@ -41,7 +47,7 @@ export function Sidebar() {
               cursor: 'pointer',
               padding: 0,
               textAlign: 'left',
-              fontWeight: selectedState === '' ? 'bold' : 'normal',
+              fontWeight: !selectedState ? 'bold' : 'normal',
             }}
           >
             All

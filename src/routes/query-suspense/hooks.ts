@@ -64,7 +64,7 @@ async function fetchCities(params: CitiesParams) {
 }
 
 async function fetchData(): Promise<Record<string, Array<{ name: string; state: string }>>> {
-  const latency = (window as any).__LATENCY__ || 0;
+  const latency = (window as any).__LATENCY__ || 200;
 
   await sleep(latency);
 

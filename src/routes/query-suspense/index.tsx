@@ -7,7 +7,7 @@ import { Sidebar } from './Sidebar';
 
 export function Component() {
   const [_, forceRender] = useState(0);
-  const [latency, setLatency] = useState(0);
+  const [latency, setLatency] = useState(200);
 
   return (
     <QueryBoundary>
@@ -45,11 +45,10 @@ export function Component() {
             }}
           >
             <button onClick={() => forceRender((p) => p + 1)}>Re-render</button>
-
-            <span>Extra latency {latency}ms</span>
+            <span>Latency {latency}ms</span>
             <input
               type="range"
-              min={0}
+              min={200}
               max={4000}
               step={100}
               value={latency}

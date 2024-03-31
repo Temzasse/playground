@@ -1,5 +1,6 @@
 import { useDeferredValue } from 'react';
 import { useDeepCompareMemo } from 'use-deep-compare';
+import { useSpinDelay } from 'spin-delay';
 
 import {
   DefaultError,
@@ -7,7 +8,6 @@ import {
   UseSuspenseQueryOptions,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import { useSpinDelay } from 'spin-delay';
 
 export function useSuspenseQueryDeferred<
   TQueryFnData = unknown,

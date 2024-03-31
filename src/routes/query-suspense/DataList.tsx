@@ -34,8 +34,8 @@ export function DataList() {
             <li
               key={`${city.name}-${city.state}`}
               style={{
-                backgroundColor: isSuspending ? 'lightgray' : 'transparent',
-                opacity: isSuspending ? 0.5 : 1,
+                backgroundColor: isSuspending ? '#eee' : 'transparent',
+                color: isSuspending ? 'transparent' : 'black',
                 padding: 2,
                 borderRadius: 4,
               }}
