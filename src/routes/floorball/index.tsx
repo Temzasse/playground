@@ -1,42 +1,66 @@
-import { CSSProperties, HTMLAttributes, forwardRef, useReducer, useRef } from 'react';
-import { DndContext, DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
+import {
+  CSSProperties,
+  HTMLAttributes,
+  forwardRef,
+  useState,
+  useRef,
+} from 'react';
+
+import {
+  DndContext,
+  DragEndEvent,
+  useDraggable,
+  useDroppable,
+} from '@dnd-kit/core';
+
 import { useGSAP } from '@gsap/react';
 import useMeasure from 'react-use-measure';
 import gsap from 'gsap';
 
 gsap.registerPlugin(useGSAP);
 
+// Constants ------------------------------------------------------------------
 // Size of floorball field is 40m x 20m but we want uneven number of cells
 // so that the center point is in the middle of the field
 const cols = 21;
 const rows = 41;
-const aspectRatio = cols / rows; // vertically long field
+const aspectRatio = 1 / 2; // vertically long field
+const cellIdPrefix = 'field-grid-cell';
+// ----------------------------------------------------------------------------
 
 export function Component() {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const timeline = useRef<gsap.core.Timeline>(
-    gsap.timeline({
-      repeat: Infinity,
-      paused: true,
-    })
-  ).current;
+  const { state, addDot } = useFieldState();
+  const { timeline, timelineRef } = useTimeline();
 
   function handleDragEnd(event: DragEndEvent) {
-    console.log('> event', event);
-    if (event.over && event.over.id === 'field-grid-cell') {
-      // Get drop position relative to the drop target
-      // const kind = event.active.id as DotKind;
-      // if (kind === 'player') {
-      //   dispatch({ type: 'addPlayer', payload: 'player' });
-      // } else if (kind === 'opponent') {
-      //   dispatch({ type: 'addOpponent', payload: 'opponent' });
-      // } else if (kind === 'neutral') {
-      //   dispatch({ type: 'addNeutral', payload: 'neutral' });
-      // }
+    if (event.over && event.over.id.toString().includes(cellIdPrefix)) {
+      const kind = event.active.data.current?.kind;
+      const index = event.over.data.current?.index;
+
+      if (dotKinds.includes(kind) && typeof index === 'number') {
+        addDot(kind, index);
+      }
     }
   }
+
+  return (
+    <DndContext onDragEnd={handleDragEnd}>
+      <div ref={timelineRef} style={styles.container}>
+        <Field state={state} />
+        <DotOptions />
+        <TimelineControls timeline={timeline} />
+      </div>
+    </DndContext>
+  );
+}
+
+// Animation ------------------------------------------------------------------
+
+function useTimeline() {
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const timeline = useRef<gsap.core.Timeline>(
+    gsap.timeline({ repeat: Infinity, paused: true })
+  ).current;
 
   useGSAP(
     () => {
@@ -44,29 +68,62 @@ export function Component() {
       // timeline.to(circlerRef.current, { y: 50, duration: 1 });
       // timeline.to(circlerRef.current, { opacity: 0, duration: 1 });
     },
-    { scope: containerRef }
+    { scope: timelineRef }
   );
 
-  return (
-    <DndContext onDragEnd={handleDragEnd}>
-      <div ref={containerRef} style={styles.container}>
-        <Field />
-        <DotOptions />
-        <Controls timeline={timeline} />
-      </div>
-    </DndContext>
-  );
+  return { timeline, timelineRef };
 }
 
-function Field() {
+// Components -----------------------------------------------------------------
+
+function Field({ state }: { state: FieldState }) {
   const [measureRef, bounds] = useMeasure();
-  const cellSize = Math.round(bounds.width / cols);
+
+  // Determine cell size so that the field fits the container and has cell size
+  // is a whole number
+  const cellSize = Math.floor(
+    Math.min(bounds.width / cols, bounds.height / rows)
+  );
+
+  function renderDot(dot: DotState) {
+    const x = dot.initialIndex % cols;
+    const y = Math.floor(dot.initialIndex / cols);
+
+    return (
+      <Dot
+        key={`${dot.kind}-${dot.initialIndex}`}
+        kind={dot.kind}
+        style={{
+          ...styles.fieldDot,
+          top: `${y * cellSize}px`,
+          left: `${x * cellSize}px`,
+          width: `${cellSize}px`,
+          height: `${cellSize}px`,
+        }}
+      />
+    );
+  }
 
   return (
-    <div ref={measureRef} style={styles.field}>
-      <FieldGrid />
-      <FieldCenterLine />
-      <FieldCenterPoint cellSize={cellSize / 2} />
+    <div ref={measureRef} style={styles.fieldContainer}>
+      {bounds.height !== 0 && (
+        <div
+          style={{
+            ...styles.field,
+            width: cellSize * cols,
+            height: cellSize * rows,
+            gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+            gridTemplateRows: `repeat(${rows}, ${cellSize}px)`,
+          }}
+        >
+          <FieldGrid />
+          <FieldCenterLine />
+          <FieldCenterPoint cellSize={cellSize / 2} />
+          {state.neutral.map(renderDot)}
+          {state.player.map(renderDot)}
+          {state.opponent.map(renderDot)}
+        </div>
+      )}
     </div>
   );
 }
@@ -85,7 +142,8 @@ const debug = false;
 
 function FieldGridCell({ index }: { index: number }) {
   const { setNodeRef, isOver } = useDroppable({
-    id: `field-grid-cell-${index + 1}`,
+    id: `${cellIdPrefix}-${index}`,
+    data: { index },
   });
 
   return (
@@ -93,6 +151,7 @@ function FieldGridCell({ index }: { index: number }) {
       ref={setNodeRef}
       style={{
         border: debug ? '1px solid red' : 'none',
+        borderRadius: '999px',
         backgroundColor: isOver ? 'rgba(0, 0, 0, 0.2)' : 'transparent',
       }}
     />
@@ -100,7 +159,11 @@ function FieldGridCell({ index }: { index: number }) {
 }
 
 function FieldCenterPoint({ cellSize }: { cellSize: number }) {
-  return <div style={{ ...styles.fieldCenterPoint, width: cellSize, height: cellSize }} />;
+  return (
+    <div
+      style={{ ...styles.fieldCenterPoint, width: cellSize, height: cellSize }}
+    />
+  );
 }
 
 function FieldCenterLine() {
@@ -118,16 +181,36 @@ function DotOptions() {
 }
 
 function DotOption({ kind }: { kind: DotKind }) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: kind,
-  });
+  const { attributes, listeners, transform, isDragging, setNodeRef } =
+    useDraggable({
+      id: kind,
+      data: { kind },
+    });
 
-  const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined;
+  const style = transform
+    ? {
+        cursor: 'grabbing',
+        transform: `
+          translate3d(${transform.x}px, ${transform.y}px, 0)
+          scale(${isDragging ? 0.65 : 1})
+        `,
+      }
+    : {
+        cursor: 'grab',
+      };
 
-  return <Dot kind={kind} ref={setNodeRef} style={style} {...listeners} {...attributes} />;
+  return (
+    <Dot
+      kind={kind}
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+    />
+  );
 }
 
-function Controls({ timeline }: { timeline: gsap.core.Timeline }) {
+function TimelineControls({ timeline }: { timeline: gsap.core.Timeline }) {
   return (
     <div style={styles.controls}>
       <button onClick={() => timeline.play()}>Play</button>
@@ -144,25 +227,86 @@ type DotProps = HTMLAttributes<HTMLDivElement> & {
   kind: DotKind;
 };
 
+const dotKinds: DotKind[] = ['player', 'opponent', 'neutral'];
+
 const kindToColor: Record<DotKind, string> = {
   player: 'blue',
   opponent: 'red',
   neutral: 'gray',
 };
 
-const Dot = forwardRef<HTMLDivElement, DotProps>(({ kind, style, ...rest }, ref) => {
-  return (
-    <div
-      {...rest}
-      ref={ref}
-      style={{
-        ...style,
-        ...styles.dot,
-        background: kindToColor[kind],
-      }}
-    />
-  );
-});
+const Dot = forwardRef<HTMLDivElement, DotProps>(
+  ({ kind, style, ...rest }, ref) => {
+    return (
+      <div
+        {...rest}
+        ref={ref}
+        style={{
+          ...styles.dot,
+          ...style,
+          background: kindToColor[kind],
+        }}
+      />
+    );
+  }
+);
+
+// State management -----------------------------------------------------------
+
+type DotState = {
+  kind: DotKind;
+  initialIndex: number; // grid cell index
+};
+
+type FieldState = Record<DotKind, DotState[]>;
+
+function useFieldState() {
+  const [state, setState] = useState<FieldState>({
+    player: [],
+    opponent: [],
+    neutral: [],
+  });
+
+  function addDot(kind: DotKind, initialIndex: number) {
+    setState((prev) => {
+      const dots = prev[kind];
+
+      // Max 5 dots per kind
+      if (dots.length >= 5) {
+        return prev;
+      }
+
+      // There cannot be two dots in the same cell
+      if (dots.some((dot) => dot.initialIndex === initialIndex)) {
+        return prev;
+      }
+
+      const newDot = { kind, initialIndex };
+
+      return { ...prev, [kind]: [...dots, newDot] };
+    });
+  }
+
+  function removeDot(dot: DotState) {
+    setState((prev) => {
+      const dots = prev[dot.kind];
+      const index = dots.findIndex((d) => d.initialIndex === dot.initialIndex);
+
+      if (index === -1) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [dot.kind]: [...dots.slice(0, index), ...dots.slice(index + 1)],
+      };
+    });
+  }
+
+  return { state, addDot, removeDot };
+}
+
+// Styles ---------------------------------------------------------------------
 
 const styles = {
   container: {
@@ -175,16 +319,21 @@ const styles = {
     height: '100vh',
     padding: '50px',
   },
-  field: {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${cols} , 1fr)`,
-    gridTemplateRows: `repeat(${rows}, 1fr)`,
+  fieldContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     height: '100%',
     aspectRatio: `${aspectRatio}`,
+  },
+  field: {
+    display: 'grid',
     background: '#5DB5E0',
     position: 'relative',
     overflow: 'hidden',
     borderRadius: '40px',
+    border: '4px solid #3281a8',
+    boxSizing: 'content-box',
   },
   fieldCenterPoint: {
     position: 'absolute',
@@ -203,6 +352,10 @@ const styles = {
     background: '#4697c0',
     transform: 'translate(-50%, -50%)',
   },
+  fieldDot: {
+    position: 'absolute',
+    transform: 'scale(0.95)', // small gap between dots
+  },
   dotOptions: {
     display: 'flex',
     gap: '10px',
@@ -217,43 +370,3 @@ const styles = {
     gap: '10px',
   },
 } satisfies Record<string, CSSProperties>;
-
-type DotState = {
-  kind: DotKind;
-  initialPosition: {
-    x: number;
-    y: number;
-  };
-};
-
-type TrainingState = {
-  players: DotState[];
-  opponents: DotState[];
-  neutrals: DotState[];
-};
-
-type TrainingAction = {
-  type: 'add';
-  payload: DotState;
-};
-
-function useTrainingState() {
-  const [state, dispatch] = useReducer(
-    (state: TrainingState, action: TrainingAction) => {
-      if (action.type === 'add') {
-        return {
-          ...state,
-          [action.payload.kind]: [...state[action.payload.kind], action.payload.initialPosition],
-        };
-      }
-      return state;
-    },
-    {
-      players: [],
-      opponents: [],
-      neutrals: [],
-    }
-  );
-
-  return { state, dispatch };
-}
