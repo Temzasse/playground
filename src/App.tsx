@@ -13,6 +13,14 @@ const router = createBrowserRouter([
         path: 'query-suspense',
         lazy: () => import('./routes/query-suspense'),
       },
+      {
+        path: 'defer-expensive',
+        lazy: () => import('./routes/defer-expensive'),
+      },
+      {
+        path: 'floorball',
+        lazy: () => import('./routes/floorball'),
+      },
     ],
   },
 ]);

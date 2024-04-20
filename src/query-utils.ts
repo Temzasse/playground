@@ -19,5 +19,14 @@ export function useSuspenseQueryDeferred<
   const deferredQueryKey = useDeferredValue(queryKey);
   const query = useSuspenseQuery({ ...options, queryKey: deferredQueryKey });
   const isSuspending = useSpinDelay(deferredQueryKey !== queryKey);
-  return { ...query, isSuspending };
+
+  /**
+   * Maintain tracked properties by extending the query object instead of
+   * creating a new object.
+   * See: https://tanstack.com/query/latest/docs/framework/react/guides/render-optimizations#tracked-properties
+   */
+  const q = query as typeof query & { isSuspending: boolean };
+  q.isSuspending = isSuspending;
+
+  return q;
 }
