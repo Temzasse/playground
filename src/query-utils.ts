@@ -15,7 +15,10 @@ export function useSuspenseQueryDeferred<
   TData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey,
 >(options: UseSuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey>) {
-  const queryKey = useDeepCompareMemo(() => options.queryKey, [options.queryKey]);
+  const queryKey = useDeepCompareMemo(
+    () => options.queryKey,
+    [options.queryKey]
+  );
   const deferredQueryKey = useDeferredValue(queryKey);
   const query = useSuspenseQuery({ ...options, queryKey: deferredQueryKey });
   const isSuspending = useSpinDelay(deferredQueryKey !== queryKey);

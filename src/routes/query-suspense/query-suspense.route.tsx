@@ -1,11 +1,25 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
+import { z } from 'zod';
 
-import { QueryBoundary } from '@/components/QueryBoundary';
-import { SearchInput } from './SearchInput';
-import { DataList } from './DataList';
-import { Sidebar } from './Sidebar';
+import { QueryBoundary } from '@/components/query-boundary';
+import { Sidebar } from './sidebar';
+import { SearchInput } from './search-input';
+import { DataList } from './data-list';
 
-export function Component() {
+const searchSchema = z.object({
+  page: z.number().min(1).default(1),
+  pageSize: z.number().min(1).max(100).default(20),
+  state: z.string().optional().default(''),
+  search: z.string().optional().default(''),
+});
+
+export const Route = createFileRoute('/_layout/query-suspense')({
+  component: RouteComponent,
+  validateSearch: (search) => searchSchema.parse(search),
+});
+
+function RouteComponent() {
   const [_, forceRender] = useState(0);
   const [latency, setLatency] = useState(200);
 

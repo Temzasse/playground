@@ -3,7 +3,7 @@ import { queryOptions } from '@tanstack/react-query';
 import { sleep } from '@/utils';
 import { useSuspenseQueryDeferred } from '@/query-utils';
 
-type CitiesParams = {
+export type CitiesParams = {
   state: string | null;
   searchTerm: string;
   page: number;
@@ -51,7 +51,9 @@ async function fetchCities(params: CitiesParams) {
 
   const start = (params.page - 1) * params.pageSize;
   const end = start + params.pageSize;
-  const baseCities = params.state ? data[params.state] : Object.values(data).flat();
+  const baseCities = params.state
+    ? data[params.state]
+    : Object.values(data).flat();
   const filteredCities = baseCities.filter((city) =>
     city.name.toLowerCase().includes(params.searchTerm.toLowerCase())
   );
@@ -63,16 +65,22 @@ async function fetchCities(params: CitiesParams) {
   };
 }
 
-async function fetchData(): Promise<Record<string, Array<{ name: string; state: string }>>> {
+async function fetchData(): Promise<
+  Record<string, Array<{ name: string; state: string }>>
+> {
   const latency = (window as any).__LATENCY__ || 200;
 
   await sleep(latency);
 
-  const data = (await fetch('/data.json').then((res) => res.json())) as Record<string, string[]>;
+  const data = (await fetch('/data.json').then((res) => res.json())) as Record<
+    string,
+    string[]
+  >;
 
   return Object.fromEntries(
     Object.entries(data).map(
-      ([state, cities]) => [state, cities.map((name) => ({ name, state }))] as const
+      ([state, cities]) =>
+        [state, cities.map((name) => ({ name, state }))] as const
     )
   );
 }

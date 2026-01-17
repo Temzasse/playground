@@ -1,23 +1,21 @@
-import { useSearchParams } from 'react-router-dom';
-import { useStatesQuery } from './hooks';
+import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useStatesQuery } from './queries';
 
 export function Sidebar() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const searchParams = useSearch({ from: '/query-suspense' });
   const { data } = useStatesQuery();
-  const selectedState = searchParams.get('state');
+  const selectedState = searchParams.state;
 
   function handleSelect(value: string) {
-    setSearchParams((params) => {
-      if (!value) {
-        params.delete('state');
-      } else {
-        params.set('state', value);
-      }
-
-      params.set('page', '1');
-      params.delete('search');
-
-      return params;
+    navigate({
+      to: '/query-suspense',
+      search: {
+        state: value || undefined,
+        page: 1,
+        search: undefined,
+        pageSize: searchParams.pageSize,
+      },
     });
   }
 

@@ -8,7 +8,9 @@ export function QueryErrorBoundary({ children }: { children: ReactNode }) {
       {({ reset }) => (
         <ErrorBoundary
           onReset={reset}
-          fallbackRender={({ resetErrorBoundary }) => <ErrorView onReset={resetErrorBoundary} />}
+          fallbackRender={({ resetErrorBoundary }) => (
+            <ErrorView onReset={resetErrorBoundary} />
+          )}
         >
           {children}
         </ErrorBoundary>

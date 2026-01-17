@@ -28,7 +28,7 @@ const aspectRatio = 1 / 2; // vertically long field
 const cellIdPrefix = 'field-grid-cell';
 // ----------------------------------------------------------------------------
 
-export function Component() {
+export function Floorball() {
   const { state, addDot } = useFieldState();
   const { timeline, timelineRef } = useTimeline();
 

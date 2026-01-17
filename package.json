@@ -23,10 +23,12 @@
     "react-merge-refs": "3.0.2",
     "react-use-measure": "2.1.7",
     "spin-delay": "2.0.1",
-    "use-deep-compare": "1.3.0"
+    "use-deep-compare": "1.3.0",
+    "zod": "4.3.5"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "5.91.2",
+    "@tanstack/router-plugin": "1.150.0",
     "@types/react": "19.2.8",
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "8.53.0",

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
-import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
-import { QueryErrorBoundary } from './QueryErrorBoundary';
+import { QuerySuspenseBoundary } from './query-suspense-boundary';
+import { QueryErrorBoundary } from './query-error-boundary';
 
 export function QueryBoundary({ children }: { children: ReactNode }) {
   return (

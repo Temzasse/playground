@@ -1,14 +1,14 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearch } from '@tanstack/react-router';
 
-import { useCitiesQuery } from './hooks';
+import { useCitiesQuery } from './queries';
 import { Pagination } from './Pagination';
 
 export function DataList() {
-  const [searchParams] = useSearchParams();
-  const state = searchParams.get('state');
-  const page = Number(searchParams.get('page')) || 1;
-  const pageSize = Number(searchParams.get('pageSize')) || 20;
-  const searchTerm = searchParams.get('search') || '';
+  const searchParams = useSearch({ from: '/query-suspense' });
+  const state = searchParams.state;
+  const page = searchParams.page || 1;
+  const pageSize = searchParams.pageSize || 20;
+  const searchTerm = searchParams.search || '';
 
   const { data, isSuspending } = useCitiesQuery({
     state,
