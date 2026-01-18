@@ -1,42 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { zodValidator } from '@tanstack/zod-adapter';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { useState } from 'react';
-import { z } from 'zod';
 
 import { Sidebar } from './sidebar';
-import { SearchInput } from './search-input';
-import { DataList } from './data-list';
 import { queries } from './queries';
 
-const searchSchema = z.object({
-  page: z.number().min(1).default(1),
-  pageSize: z.number().min(1).max(100).default(20),
-  state: z.string().default(''),
-  search: z.string().default(''),
-});
-
-export const Route = createFileRoute('/_layout/query-suspense')({
+export const Route = createFileRoute('/_layout/states')({
   component: RouteComponent,
-  validateSearch: zodValidator(searchSchema),
-  loaderDeps: ({ search }) => ({
-    state: search.state,
-    searchTerm: search.search,
-    page: search.page,
-    pageSize: search.pageSize,
-  }),
-  loader: async ({ context, deps }) => {
-    const statesOptions = queries.states();
-    const citiesOptions = queries.cities({
-      state: deps.state || null,
-      searchTerm: deps.searchTerm,
-      page: deps.page,
-      pageSize: deps.pageSize,
-    });
 
-    void context.queryClient.prefetchQuery(statesOptions);
-    void context.queryClient.prefetchQuery(citiesOptions);
+  loader: async ({ context }) => {
+    const statesQueryRef = queries.states();
 
-    return { statesOptions, citiesOptions };
+    void context.queryClient.prefetchQuery(statesQueryRef);
+
+    return { statesQueryRef };
   },
 });
 
@@ -53,6 +29,7 @@ function RouteComponent() {
       }}
     >
       <Sidebar />
+
       <div
         style={{
           padding: 20,
@@ -62,10 +39,7 @@ function RouteComponent() {
           alignItems: 'start',
         }}
       >
-        <h3>Cities</h3>
-        <SearchInput />
-        <DataList />
-        <hr />
+        <Outlet />
 
         <div
           style={{

@@ -1,7 +1,7 @@
 import { ChangeEvent } from 'react';
 import { getRouteApi } from '@tanstack/react-router';
 
-const routeApi = getRouteApi('/_layout/query-suspense');
+const routeApi = getRouteApi('/_layout/states/$state');
 
 export function SearchInput() {
   const navigate = routeApi.useNavigate();

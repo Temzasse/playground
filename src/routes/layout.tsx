@@ -11,8 +11,8 @@ function Layout() {
       <nav>
         <ul>
           <li>
-            <Link to="/query-suspense">Query Suspense</Link>
-            <Link to="/apollo-suspense">Apollo Suspense</Link>
+            <Link to="/states">USA states</Link>
+            <Link to="/films">Star Wars films</Link>
           </li>
         </ul>
       </nav>

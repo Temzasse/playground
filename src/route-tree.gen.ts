@@ -11,9 +11,12 @@
 import { Route as rootRouteImport } from './routes/root';
 import { Route as layoutRouteImport } from './routes/layout';
 import { Route as indexRouteImport } from './routes/index';
-import { Route as querySuspenseQuerySuspenseDotrouteRouteImport } from './routes/query-suspense/query-suspense.route';
-import { Route as floorballFloorballDotrouteRouteImport } from './routes/floorball/floorball.route';
-import { Route as apolloSuspenseApolloSuspenseDotrouteRouteImport } from './routes/apollo-suspense/apollo-suspense.route';
+import { Route as querySuspenseStatesDotrouteRouteImport } from './routes/query-suspense/states.route';
+import { Route as apolloSuspenseFilmsDotrouteRouteImport } from './routes/apollo-suspense/films.route';
+import { Route as querySuspenseCitiesDotrouteRouteImport } from './routes/query-suspense/cities.route';
+import { Route as apolloSuspenseFilmDotrouteRouteImport } from './routes/apollo-suspense/film.route';
+import { Route as querySuspenseStatesIndexDotrouteRouteImport } from './routes/query-suspense/states-index.route';
+import { Route as apolloSuspenseFilmsIndexDotrouteRouteImport } from './routes/apollo-suspense/films-index.route';
 
 const layoutRoute = layoutRouteImport.update({
   id: '/_layout',
@@ -24,57 +27,92 @@ const indexRoute = indexRouteImport.update({
   path: '/',
   getParentRoute: () => layoutRoute,
 } as any);
-const querySuspenseQuerySuspenseDotrouteRoute =
-  querySuspenseQuerySuspenseDotrouteRouteImport.update({
-    id: '/query-suspense',
-    path: '/query-suspense',
+const querySuspenseStatesDotrouteRoute =
+  querySuspenseStatesDotrouteRouteImport.update({
+    id: '/states',
+    path: '/states',
     getParentRoute: () => layoutRoute,
   } as any);
-const floorballFloorballDotrouteRoute =
-  floorballFloorballDotrouteRouteImport.update({
-    id: '/floorball',
-    path: '/floorball',
+const apolloSuspenseFilmsDotrouteRoute =
+  apolloSuspenseFilmsDotrouteRouteImport.update({
+    id: '/films',
+    path: '/films',
     getParentRoute: () => layoutRoute,
   } as any);
-const apolloSuspenseApolloSuspenseDotrouteRoute =
-  apolloSuspenseApolloSuspenseDotrouteRouteImport.update({
-    id: '/apollo-suspense',
-    path: '/apollo-suspense',
-    getParentRoute: () => layoutRoute,
+const querySuspenseCitiesDotrouteRoute =
+  querySuspenseCitiesDotrouteRouteImport.update({
+    id: '/$state',
+    path: '/$state',
+    getParentRoute: () => querySuspenseStatesDotrouteRoute,
+  } as any);
+const apolloSuspenseFilmDotrouteRoute =
+  apolloSuspenseFilmDotrouteRouteImport.update({
+    id: '/$filmId',
+    path: '/$filmId',
+    getParentRoute: () => apolloSuspenseFilmsDotrouteRoute,
+  } as any);
+const querySuspenseStatesIndexDotrouteRoute =
+  querySuspenseStatesIndexDotrouteRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => querySuspenseStatesDotrouteRoute,
+  } as any);
+const apolloSuspenseFilmsIndexDotrouteRoute =
+  apolloSuspenseFilmsIndexDotrouteRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => apolloSuspenseFilmsDotrouteRoute,
   } as any);
 
 export interface FileRoutesByFullPath {
-  '/apollo-suspense': typeof apolloSuspenseApolloSuspenseDotrouteRoute;
-  '/floorball': typeof floorballFloorballDotrouteRoute;
-  '/query-suspense': typeof querySuspenseQuerySuspenseDotrouteRoute;
+  '/films': typeof apolloSuspenseFilmsDotrouteRouteWithChildren;
+  '/states': typeof querySuspenseStatesDotrouteRouteWithChildren;
   '/': typeof indexRoute;
+  '/films/': typeof apolloSuspenseFilmsIndexDotrouteRoute;
+  '/states/': typeof querySuspenseStatesIndexDotrouteRoute;
+  '/films/$filmId': typeof apolloSuspenseFilmDotrouteRoute;
+  '/states/$state': typeof querySuspenseCitiesDotrouteRoute;
 }
 export interface FileRoutesByTo {
-  '/apollo-suspense': typeof apolloSuspenseApolloSuspenseDotrouteRoute;
-  '/floorball': typeof floorballFloorballDotrouteRoute;
-  '/query-suspense': typeof querySuspenseQuerySuspenseDotrouteRoute;
   '/': typeof indexRoute;
+  '/films': typeof apolloSuspenseFilmsIndexDotrouteRoute;
+  '/states': typeof querySuspenseStatesIndexDotrouteRoute;
+  '/films/$filmId': typeof apolloSuspenseFilmDotrouteRoute;
+  '/states/$state': typeof querySuspenseCitiesDotrouteRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   '/_layout': typeof layoutRouteWithChildren;
-  '/_layout/apollo-suspense': typeof apolloSuspenseApolloSuspenseDotrouteRoute;
-  '/_layout/floorball': typeof floorballFloorballDotrouteRoute;
-  '/_layout/query-suspense': typeof querySuspenseQuerySuspenseDotrouteRoute;
+  '/_layout/films': typeof apolloSuspenseFilmsDotrouteRouteWithChildren;
+  '/_layout/states': typeof querySuspenseStatesDotrouteRouteWithChildren;
   '/_layout/': typeof indexRoute;
+  '/_layout/films/': typeof apolloSuspenseFilmsIndexDotrouteRoute;
+  '/_layout/states/': typeof querySuspenseStatesIndexDotrouteRoute;
+  '/_layout/films/$filmId': typeof apolloSuspenseFilmDotrouteRoute;
+  '/_layout/states/$state': typeof querySuspenseCitiesDotrouteRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/apollo-suspense' | '/floorball' | '/query-suspense' | '/';
+  fullPaths:
+    | '/films'
+    | '/states'
+    | '/'
+    | '/films/'
+    | '/states/'
+    | '/films/$filmId'
+    | '/states/$state';
   fileRoutesByTo: FileRoutesByTo;
-  to: '/apollo-suspense' | '/floorball' | '/query-suspense' | '/';
+  to: '/' | '/films' | '/states' | '/films/$filmId' | '/states/$state';
   id:
     | '__root__'
     | '/_layout'
-    | '/_layout/apollo-suspense'
-    | '/_layout/floorball'
-    | '/_layout/query-suspense'
-    | '/_layout/';
+    | '/_layout/films'
+    | '/_layout/states'
+    | '/_layout/'
+    | '/_layout/films/'
+    | '/_layout/states/'
+    | '/_layout/films/$filmId'
+    | '/_layout/states/$state';
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -97,43 +135,96 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof indexRouteImport;
       parentRoute: typeof layoutRoute;
     };
-    '/_layout/query-suspense': {
-      id: '/_layout/query-suspense';
-      path: '/query-suspense';
-      fullPath: '/query-suspense';
-      preLoaderRoute: typeof querySuspenseQuerySuspenseDotrouteRouteImport;
+    '/_layout/states': {
+      id: '/_layout/states';
+      path: '/states';
+      fullPath: '/states';
+      preLoaderRoute: typeof querySuspenseStatesDotrouteRouteImport;
       parentRoute: typeof layoutRoute;
     };
-    '/_layout/floorball': {
-      id: '/_layout/floorball';
-      path: '/floorball';
-      fullPath: '/floorball';
-      preLoaderRoute: typeof floorballFloorballDotrouteRouteImport;
+    '/_layout/films': {
+      id: '/_layout/films';
+      path: '/films';
+      fullPath: '/films';
+      preLoaderRoute: typeof apolloSuspenseFilmsDotrouteRouteImport;
       parentRoute: typeof layoutRoute;
     };
-    '/_layout/apollo-suspense': {
-      id: '/_layout/apollo-suspense';
-      path: '/apollo-suspense';
-      fullPath: '/apollo-suspense';
-      preLoaderRoute: typeof apolloSuspenseApolloSuspenseDotrouteRouteImport;
-      parentRoute: typeof layoutRoute;
+    '/_layout/states/$state': {
+      id: '/_layout/states/$state';
+      path: '/$state';
+      fullPath: '/states/$state';
+      preLoaderRoute: typeof querySuspenseCitiesDotrouteRouteImport;
+      parentRoute: typeof querySuspenseStatesDotrouteRoute;
+    };
+    '/_layout/films/$filmId': {
+      id: '/_layout/films/$filmId';
+      path: '/$filmId';
+      fullPath: '/films/$filmId';
+      preLoaderRoute: typeof apolloSuspenseFilmDotrouteRouteImport;
+      parentRoute: typeof apolloSuspenseFilmsDotrouteRoute;
+    };
+    '/_layout/states/': {
+      id: '/_layout/states/';
+      path: '/';
+      fullPath: '/states/';
+      preLoaderRoute: typeof querySuspenseStatesIndexDotrouteRouteImport;
+      parentRoute: typeof querySuspenseStatesDotrouteRoute;
+    };
+    '/_layout/films/': {
+      id: '/_layout/films/';
+      path: '/';
+      fullPath: '/films/';
+      preLoaderRoute: typeof apolloSuspenseFilmsIndexDotrouteRouteImport;
+      parentRoute: typeof apolloSuspenseFilmsDotrouteRoute;
     };
   }
 }
 
+interface apolloSuspenseFilmsDotrouteRouteChildren {
+  apolloSuspenseFilmsIndexDotrouteRoute: typeof apolloSuspenseFilmsIndexDotrouteRoute;
+  apolloSuspenseFilmDotrouteRoute: typeof apolloSuspenseFilmDotrouteRoute;
+}
+
+const apolloSuspenseFilmsDotrouteRouteChildren: apolloSuspenseFilmsDotrouteRouteChildren =
+  {
+    apolloSuspenseFilmsIndexDotrouteRoute:
+      apolloSuspenseFilmsIndexDotrouteRoute,
+    apolloSuspenseFilmDotrouteRoute: apolloSuspenseFilmDotrouteRoute,
+  };
+
+const apolloSuspenseFilmsDotrouteRouteWithChildren =
+  apolloSuspenseFilmsDotrouteRoute._addFileChildren(
+    apolloSuspenseFilmsDotrouteRouteChildren,
+  );
+
+interface querySuspenseStatesDotrouteRouteChildren {
+  querySuspenseStatesIndexDotrouteRoute: typeof querySuspenseStatesIndexDotrouteRoute;
+  querySuspenseCitiesDotrouteRoute: typeof querySuspenseCitiesDotrouteRoute;
+}
+
+const querySuspenseStatesDotrouteRouteChildren: querySuspenseStatesDotrouteRouteChildren =
+  {
+    querySuspenseStatesIndexDotrouteRoute:
+      querySuspenseStatesIndexDotrouteRoute,
+    querySuspenseCitiesDotrouteRoute: querySuspenseCitiesDotrouteRoute,
+  };
+
+const querySuspenseStatesDotrouteRouteWithChildren =
+  querySuspenseStatesDotrouteRoute._addFileChildren(
+    querySuspenseStatesDotrouteRouteChildren,
+  );
+
 interface layoutRouteChildren {
-  apolloSuspenseApolloSuspenseDotrouteRoute: typeof apolloSuspenseApolloSuspenseDotrouteRoute;
-  floorballFloorballDotrouteRoute: typeof floorballFloorballDotrouteRoute;
-  querySuspenseQuerySuspenseDotrouteRoute: typeof querySuspenseQuerySuspenseDotrouteRoute;
+  apolloSuspenseFilmsDotrouteRoute: typeof apolloSuspenseFilmsDotrouteRouteWithChildren;
+  querySuspenseStatesDotrouteRoute: typeof querySuspenseStatesDotrouteRouteWithChildren;
   indexRoute: typeof indexRoute;
 }
 
 const layoutRouteChildren: layoutRouteChildren = {
-  apolloSuspenseApolloSuspenseDotrouteRoute:
-    apolloSuspenseApolloSuspenseDotrouteRoute,
-  floorballFloorballDotrouteRoute: floorballFloorballDotrouteRoute,
-  querySuspenseQuerySuspenseDotrouteRoute:
-    querySuspenseQuerySuspenseDotrouteRoute,
+  apolloSuspenseFilmsDotrouteRoute:
+    apolloSuspenseFilmsDotrouteRouteWithChildren,
+  querySuspenseStatesDotrouteRoute:
+    querySuspenseStatesDotrouteRouteWithChildren,
   indexRoute: indexRoute,
 };
 

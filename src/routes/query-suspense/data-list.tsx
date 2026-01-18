@@ -3,11 +3,11 @@ import { getRouteApi } from '@tanstack/react-router';
 import { Pagination } from './pagination';
 import { useSuspenseQueryDeferred } from '@/data/react-query/hooks';
 
-const routeApi = getRouteApi('/_layout/query-suspense');
+const routeApi = getRouteApi('/_layout/states/$state');
 
 export function DataList() {
-  const { citiesOptions } = routeApi.useLoaderData();
-  const { data, isSuspending } = useSuspenseQueryDeferred(citiesOptions);
+  const { citiesQueryRef } = routeApi.useLoaderData();
+  const { data, isSuspending } = useSuspenseQueryDeferred(citiesQueryRef);
   const { cities, total } = data;
 
   return (
