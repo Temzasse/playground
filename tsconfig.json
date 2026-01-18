@@ -22,8 +22,24 @@
 
     "baseUrl": ".",
     "paths": {
+      "@/gql": ["./src/data/apollo-graphql/gql.ts"],
       "@/*": ["./src/*"]
-    }
+    },
+
+    /* GraphQL codegen plugin */
+    "plugins": [
+      {
+        "name": "gql.tada/ts-plugin",
+        "schema": {
+          /* https://studio.apollographql.com/public/star-wars-swapi/variant/current/explorer */
+          "url": "https://swapi-graphql.netlify.app/graphql",
+          "headers": {
+            "Accept": "application/graphql-response+json"
+          }
+        },
+        "tadaOutputLocation": "./src/data/apollo-graphql/graphql-env.d.ts"
+      }
+    ]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

@@ -1,21 +1,17 @@
-import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useStatesQuery } from './queries';
+import { useSuspenseQueryDeferred } from '@/data/react-query/hooks';
+import { getRouteApi } from '@tanstack/react-router';
+
+const routeApi = getRouteApi('/_layout/query-suspense');
 
 export function Sidebar() {
-  const navigate = useNavigate();
-  const searchParams = useSearch({ from: '/query-suspense' });
-  const { data } = useStatesQuery();
-  const selectedState = searchParams.state;
+  const navigate = routeApi.useNavigate();
+  const { state: selectedState } = routeApi.useSearch();
+  const { statesOptions } = routeApi.useLoaderData();
+  const { data } = useSuspenseQueryDeferred(statesOptions);
 
   function handleSelect(value: string) {
     navigate({
-      to: '/query-suspense',
-      search: {
-        state: value || undefined,
-        page: 1,
-        search: undefined,
-        pageSize: searchParams.pageSize,
-      },
+      search: (prev) => ({ ...prev, state: value, page: 1 }),
     });
   }
 

@@ -1,22 +1,13 @@
-import { useSearch } from '@tanstack/react-router';
+import { getRouteApi } from '@tanstack/react-router';
 
-import { useCitiesQuery } from './queries';
-import { Pagination } from './Pagination';
+import { Pagination } from './pagination';
+import { useSuspenseQueryDeferred } from '@/data/react-query/hooks';
+
+const routeApi = getRouteApi('/_layout/query-suspense');
 
 export function DataList() {
-  const searchParams = useSearch({ from: '/query-suspense' });
-  const state = searchParams.state;
-  const page = searchParams.page || 1;
-  const pageSize = searchParams.pageSize || 20;
-  const searchTerm = searchParams.search || '';
-
-  const { data, isSuspending } = useCitiesQuery({
-    state,
-    page,
-    pageSize,
-    searchTerm,
-  });
-
+  const { citiesOptions } = routeApi.useLoaderData();
+  const { data, isSuspending } = useSuspenseQueryDeferred(citiesOptions);
   const { cities, total } = data;
 
   return (

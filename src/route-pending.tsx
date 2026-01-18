@@ -1,10 +1,4 @@
-import { ReactNode, Suspense } from 'react';
-
-export function QuerySuspenseBoundary({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<Loading />}>{children}</Suspense>;
-}
-
-function Loading() {
+export function RoutePending() {
   return (
     <div
       style={{

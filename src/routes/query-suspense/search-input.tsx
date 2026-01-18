@@ -1,24 +1,21 @@
 import { ChangeEvent } from 'react';
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { getRouteApi } from '@tanstack/react-router';
+
+const routeApi = getRouteApi('/_layout/query-suspense');
 
 export function SearchInput() {
-  const navigate = useNavigate();
-  const searchParams = useSearch({ from: '/query-suspense' });
+  const navigate = routeApi.useNavigate();
+  const { search } = routeApi.useSearch();
 
   function handleChange({ target: { value } }: ChangeEvent<HTMLInputElement>) {
     navigate({
-      to: '/query-suspense',
-      search: {
-        ...searchParams,
-        page: 1,
-        search: value || undefined,
-      },
+      search: (prev) => ({ ...prev, search: value, page: 1 }),
     });
   }
 
   return (
     <input
-      value={searchParams.search || ''}
+      value={search || ''}
       onChange={handleChange}
       placeholder="Search cities"
     />

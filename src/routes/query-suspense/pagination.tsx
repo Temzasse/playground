@@ -1,28 +1,26 @@
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { getRouteApi } from '@tanstack/react-router';
+
+const routeApi = getRouteApi('/_layout/query-suspense');
 
 export function Pagination({ total }: { total: number }) {
-  const navigate = useNavigate();
-  const searchParams = useSearch({ from: '/query-suspense' });
-  const page = searchParams.page || 1;
-  const pageSize = searchParams.pageSize || 20;
+  const navigate = routeApi.useNavigate();
+  const { page, pageSize } = routeApi.useSearch();
 
   function handlePrev() {
     navigate({
-      to: '/query-suspense',
-      search: {
-        ...searchParams,
+      search: (prev) => ({
+        ...prev,
         page: Math.max(page - 1, 1),
-      },
+      }),
     });
   }
 
   function handleNext() {
     navigate({
-      to: '/query-suspense',
-      search: {
-        ...searchParams,
+      search: (prev) => ({
+        ...prev,
         page: Math.min(page + 1, Math.ceil(total / pageSize)),
-      },
+      }),
     });
   }
 

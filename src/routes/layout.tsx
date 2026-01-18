@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { createFileRoute, Link, Outlet } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
@@ -7,7 +7,15 @@ export const Route = createFileRoute('/_layout')({
 function Layout() {
   return (
     <div>
-      <h1>My App Layout</h1>
+      <h1>Playground</h1>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/query-suspense">Query Suspense</Link>
+            <Link to="/apollo-suspense">Apollo Suspense</Link>
+          </li>
+        </ul>
+      </nav>
       <Outlet />
     </div>
   );

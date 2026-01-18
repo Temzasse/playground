@@ -1,9 +1,8 @@
 import { queryOptions } from '@tanstack/react-query';
 
 import { sleep } from '@/utils';
-import { useSuspenseQueryDeferred } from '@/query-utils';
 
-export type CitiesParams = {
+type CitiesParams = {
   state: string | null;
   searchTerm: string;
   page: number;
@@ -24,16 +23,6 @@ export const queries = {
       queryFn: () => fetchCities(params),
     }),
 };
-
-// Queries
-
-export function useStatesQuery() {
-  return useSuspenseQueryDeferred(queries.states());
-}
-
-export function useCitiesQuery(params: CitiesParams) {
-  return useSuspenseQueryDeferred(queries.cities(params));
-}
 
 // Fetchers
 

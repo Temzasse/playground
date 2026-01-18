@@ -1,32 +1,17 @@
-import { createRoot } from 'react-dom/client';
-import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { ApolloProvider } from '@apollo/client/react';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { RouterProvider } from '@tanstack/react-router';
+import { createRoot } from 'react-dom/client';
 
 import './index.css';
-import { queryClient } from './query-client';
-import { routeTree } from './route-tree.gen';
-
-const apolloClient = {};
-const preloadQuery = async () => {};
-
-const router = createRouter({
-  routeTree,
-  context: { queryClient, apolloClient, preloadQuery },
-  defaultPreload: 'intent',
-  scrollRestoration: true,
-  defaultStructuralSharing: true,
-  defaultPreloadStaleTime: 0,
-});
-
-// Register the router instance for type safety
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
+import { queryClient } from './data/react-query/client';
+import { apolloClient } from './data/apollo-graphql/client';
+import { router } from './route-setup';
 
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={queryClient}>
-    <RouterProvider router={router} />
+    <ApolloProvider client={apolloClient}>
+      <RouterProvider router={router} />
+    </ApolloProvider>
   </QueryClientProvider>
 );
