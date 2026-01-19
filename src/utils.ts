@@ -37,7 +37,7 @@ type Timer = ReturnType<typeof setTimeout>;
 type AnyFunction<T> = (...args: T[]) => void;
 
 export function useDebouncedHandler<T>(func: AnyFunction<T>, delay: number) {
-  const timer = useRef<Timer>();
+  const timer = useRef<Timer>(undefined);
 
   useEffect(() => {
     return () => {
